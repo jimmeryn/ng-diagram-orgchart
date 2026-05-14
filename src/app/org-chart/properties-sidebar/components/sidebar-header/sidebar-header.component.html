@@ -2,7 +2,7 @@
   <span id="properties-sidebar-title" class="h7 sidebar-title">Properties</span>
   <button
     class="sidebar-toggle"
-    (click)="toggle.emit()"
+    (click)="toggled.emit()"
     [attr.aria-expanded]="isExpanded()"
     aria-label="Toggle properties panel"
   >

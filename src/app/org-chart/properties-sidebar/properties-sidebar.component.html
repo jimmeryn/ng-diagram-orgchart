@@ -1,5 +1,5 @@
 <aside class="sidebar" aria-labelledby="properties-sidebar-title">
-  <app-sidebar-header [isExpanded]="isExpanded()" (toggle)="onHeaderToggle()" />
+  <app-sidebar-header [isExpanded]="isExpanded()" (toggled)="onHeaderToggle()" />
   @if (isExpanded()) {
     <div class="sidebar-separator"></div>
     <div class="sidebar-content sidebar-enter">
