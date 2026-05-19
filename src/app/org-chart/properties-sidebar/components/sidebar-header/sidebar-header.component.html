@@ -1,9 +1,10 @@
 <div class="sidebar-header">
   <h2 id="properties-sidebar-title" class="h7 sidebar-title">Properties</h2>
   <button
+    #toggleButton
     class="sidebar-toggle"
     type="button"
-    (click)="toggled.emit($event)"
+    (click)="onToggle()"
     [attr.aria-expanded]="isExpanded()"
     aria-label="Toggle properties panel"
   >

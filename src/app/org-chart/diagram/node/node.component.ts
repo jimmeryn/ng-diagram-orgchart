@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import {
   NgDiagramModelService,
   NgDiagramPortComponent,
@@ -9,6 +18,7 @@ import {
 } from 'ng-diagram';
 import { DragReorderService } from '../../drag-reorder/drag-reorder.service';
 import { ORG_CHART_CONFIG } from '../../org-chart.config';
+import { NodeFocusService } from '../keyboard-navigation/node-focus.service';
 import { LayoutService } from '../layout/layout.service';
 import { getHasChildren, getIsCollapsed, getIsHidden } from '../model/data-getters';
 import { isOccupiedNodeData, isOrgChartNode, isVacantNode } from '../model/guards';
@@ -54,10 +64,9 @@ type NodeVariant = 'vacant' | 'compact' | 'full';
     '[style.pointer-events]': 'isHidden() ? "none" : null',
     '[attr.role]': '"treeitem"',
     '[attr.tabindex]': 'isFocusable() ? 0 : -1',
-    '[attr.aria-selected]': 'node().selected ? "true" : "false"',
+    '[attr.aria-selected]': 'node().selected',
     '[attr.aria-expanded]': 'ariaExpanded()',
     '[attr.aria-label]': 'ariaLabel()',
-    '[attr.data-node-id]': 'node().id',
     '(mouseenter)': 'isNodeHovered.set(true)',
     '(mouseleave)': 'isNodeHovered.set(false)',
     '(focus)': 'onHostFocus()',
@@ -70,6 +79,16 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   private readonly modelService = inject(NgDiagramModelService);
   private readonly dragReorderService = inject(DragReorderService);
   private readonly selectionService = inject(NgDiagramSelectionService);
+  private readonly nodeFocusService = inject(NodeFocusService);
+  private readonly host = inject(ElementRef<HTMLElement>);
+
+  constructor() {
+    effect(() => {
+      if (this.nodeFocusService.current()?.id === this.node().id) {
+        this.host.nativeElement.focus();
+      }
+    });
+  }
 
   node = input.required<Node<OrgChartNodeData>>();
 
@@ -118,9 +137,9 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
     return orgSelectedNodes.length === 0 && this.isRoot();
   });
 
-  protected readonly ariaExpanded = computed<string | null>(() => {
+  protected readonly ariaExpanded = computed<boolean | null>(() => {
     if (!this.hasChildren()) return null;
-    return getIsCollapsed(this.node()) ? 'false' : 'true';
+    return !getIsCollapsed(this.node());
   });
 
   protected onHostFocus(): void {

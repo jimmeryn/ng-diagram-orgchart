@@ -42,8 +42,7 @@ export class PropertiesSidebarComponent {
   protected readonly reportsToCandidateNodes = this.sidebarService.reportsToCandidateNodes;
   protected readonly roleOptions = this.sidebarService.roleOptions;
 
-  protected onHeaderToggle(event: MouseEvent): void {
-    const opener = event.currentTarget as HTMLElement | null;
+  protected onHeaderToggle(opener: HTMLElement): void {
     this.sidebarService.toggleSidebarVisibility(opener);
   }
 

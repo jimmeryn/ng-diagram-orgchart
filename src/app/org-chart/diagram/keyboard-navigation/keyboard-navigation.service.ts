@@ -4,13 +4,18 @@ import type { AddNodeAction } from '../model/add-node.service';
 import { getIsHidden } from '../model/data-getters';
 import { HierarchyService } from '../model/hierarchy.service';
 import { SortOrderService } from '../model/sort-order.service';
+import { getArrowStrategy, type ArrowKey, type NavDirection } from './arrow-keys';
 
-type NavIntent = 'parent' | 'firstChild' | 'prevSibling' | 'nextSibling';
+const DIRECTION_TO_ADD_ACTION: Record<NavDirection, AddNodeAction | null> = {
+  parent: null,
+  firstChild: 'child',
+  prevSibling: 'siblingBefore',
+  nextSibling: 'siblingAfter',
+};
 
 /**
- * Maps Shift+Arrow keys to the next focusable org-chart node, given the current
- * node and layout orientation. Skips nodes that are hidden by a collapsed
- * ancestor.
+ * Translates arrow keys into navigation targets and add-node positions based on
+ * layout orientation. Skips nodes hidden by a collapsed ancestor.
  */
 @Injectable()
 export class KeyboardNavigationService {
@@ -18,11 +23,10 @@ export class KeyboardNavigationService {
   private readonly hierarchyService = inject(HierarchyService);
   private readonly sortOrderService = inject(SortOrderService);
 
-  getNextNodeId(currentId: string, arrowKey: string, isHorizontal: boolean): string | null {
-    const intent = this.mapArrowToIntent(arrowKey, isHorizontal);
-    if (!intent) return null;
-
-    switch (intent) {
+  getNextNodeId(currentId: string, arrowKey: ArrowKey, isHorizontal: boolean): string | null {
+    const direction = getArrowStrategy(isHorizontal).toDirection(arrowKey);
+    if (!direction) return null;
+    switch (direction) {
       case 'parent':
         return this.findVisibleParent(currentId);
       case 'firstChild':
@@ -34,62 +38,9 @@ export class KeyboardNavigationService {
     }
   }
 
-  /**
-   * Maps Alt+Arrow to an add-node position relative to the focused node,
-   * mirroring the Shift+Arrow navigation directions.
-   */
-  getAddPositionForArrow(arrowKey: string, isHorizontal: boolean): AddNodeAction | null {
-    if (isHorizontal) {
-      switch (arrowKey) {
-        case 'ArrowRight':
-          return 'child';
-        case 'ArrowUp':
-          return 'siblingBefore';
-        case 'ArrowDown':
-          return 'siblingAfter';
-        default:
-          return null;
-      }
-    }
-    switch (arrowKey) {
-      case 'ArrowDown':
-        return 'child';
-      case 'ArrowLeft':
-        return 'siblingBefore';
-      case 'ArrowRight':
-        return 'siblingAfter';
-      default:
-        return null;
-    }
-  }
-
-  private mapArrowToIntent(key: string, isHorizontal: boolean): NavIntent | null {
-    if (isHorizontal) {
-      switch (key) {
-        case 'ArrowLeft':
-          return 'parent';
-        case 'ArrowRight':
-          return 'firstChild';
-        case 'ArrowUp':
-          return 'prevSibling';
-        case 'ArrowDown':
-          return 'nextSibling';
-        default:
-          return null;
-      }
-    }
-    switch (key) {
-      case 'ArrowUp':
-        return 'parent';
-      case 'ArrowDown':
-        return 'firstChild';
-      case 'ArrowLeft':
-        return 'prevSibling';
-      case 'ArrowRight':
-        return 'nextSibling';
-      default:
-        return null;
-    }
+  getAddPositionForArrow(arrowKey: ArrowKey, isHorizontal: boolean): AddNodeAction | null {
+    const direction = getArrowStrategy(isHorizontal).toDirection(arrowKey);
+    return direction ? DIRECTION_TO_ADD_ACTION[direction] : null;
   }
 
   private findVisibleParent(currentId: string): string | null {
@@ -112,12 +63,10 @@ export class KeyboardNavigationService {
   private findSibling(currentId: string, step: number): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
     if (!parentId) return null;
-    const visibleSiblings = this.sortOrderService
-      .getSortedChildren(parentId)
-      .filter((c) => {
-        const node = this.modelService.getNodeById(c.id);
-        return node && !getIsHidden(node);
-      });
+    const visibleSiblings = this.sortOrderService.getSortedChildren(parentId).filter((c) => {
+      const node = this.modelService.getNodeById(c.id);
+      return node && !getIsHidden(node);
+    });
     const idx = visibleSiblings.findIndex((c) => c.id === currentId);
     if (idx < 0) return null;
     return visibleSiblings.at(idx + step)?.id ?? null;

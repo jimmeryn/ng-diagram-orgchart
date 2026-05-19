@@ -38,16 +38,9 @@
       var(--ngd-token-shadow-focus-node-active-spread) var(--ngd-focus-ring-node-active);
   }
 
-  &:focus {
-    outline: none;
-  }
-
+  &:focus,
   &:focus-visible {
     outline: none;
-    --card-border-color: var(--ngd-ui-stroke-primary-highlight);
-    --card-box-shadow: var(--ngd-token-shadow-focus-node-active-x)
-      var(--ngd-token-shadow-focus-node-active-y) var(--ngd-token-shadow-focus-node-active-blur)
-      var(--ngd-token-shadow-focus-node-active-spread) var(--ngd-focus-ring-node-active);
   }
 
   &.variant-vacant {

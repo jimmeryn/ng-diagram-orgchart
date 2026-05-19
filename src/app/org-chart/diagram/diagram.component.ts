@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  inject,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import {
   DiagramInitEvent,
   initializeModel,
@@ -13,7 +6,6 @@ import {
   NgDiagramComponent,
   NgDiagramEdgeTemplateMap,
   NgDiagramNodeTemplateMap,
-  NgDiagramSelectionService,
   NgDiagramViewportService,
   type Edge,
   type NgDiagramConfig,
@@ -27,10 +19,9 @@ import { ORG_CHART_CONFIG } from '../org-chart.config';
 import { PropertiesSidebarService } from '../properties-sidebar/properties-sidebar.service';
 import { diagramModel } from './data';
 import { EdgeComponent } from './edge.component';
-import { KeyboardNavigationService } from './keyboard-navigation/keyboard-navigation.service';
+import { DiagramKeyboardController } from './keyboard-navigation/diagram-keyboard.controller';
 import { LayoutGate } from './layout/layout-gate';
 import { LayoutService, type LayoutDirection } from './layout/layout.service';
-import { ExpandCollapseService } from './model/expand-collapse.service';
 import { isOrgChartNode } from './model/guards';
 import { HierarchyService } from './model/hierarchy.service';
 import { EdgeTemplateType, NodeTemplateType } from './model/interfaces';
@@ -39,14 +30,7 @@ import { ModelChanges } from './model/model-changes';
 import { SortOrderService } from './model/sort-order.service';
 import { NodeVisibilityConfigService } from './node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from './node-visibility/node-visibility.service';
-import { AddButtonService } from './node/components/add-button/add-button.service';
 import { NodeComponent } from './node/node.component';
-
-const ARROW_KEYS = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'] as const;
-type ArrowKey = (typeof ARROW_KEYS)[number];
-function isArrowKey(key: string): key is ArrowKey {
-  return (ARROW_KEYS as readonly string[]).includes(key);
-}
 
 /**
  * Org Chart Diagram
@@ -76,15 +60,14 @@ export class DiagramComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
-  private readonly selectionService = inject(NgDiagramSelectionService);
-  private readonly expandCollapseService = inject(ExpandCollapseService);
-  private readonly addButtonService = inject(AddButtonService);
-  private readonly keyboardNavigationService = inject(KeyboardNavigationService);
+  private readonly keyboardController = inject(DiagramKeyboardController);
 
   private readonly diagramElement = viewChild('diagramElement', { read: ElementRef<HTMLElement> });
 
   constructor() {
-    this.setFallbackFocusTarget();
+    effect(() => {
+      this.sidebarService.setFallbackFocusTarget(this.diagramElement()?.nativeElement ?? null);
+    });
   }
 
   protected readonly isLayoutInitialized = this.layoutGate.isInitialized;
@@ -158,72 +141,7 @@ export class DiagramComponent {
   }
 
   onDiagramKeydown(event: KeyboardEvent): void {
-    const selectedOrgNodes = this.selectionService.selection().nodes.filter(isOrgChartNode);
-    if (selectedOrgNodes.length !== 1) return;
-    const nodeId = selectedOrgNodes.at(0)?.id;
-    if (!nodeId) return;
-
-    if (event.shiftKey && isArrowKey(event.key)) {
-      const targetId = this.keyboardNavigationService.getNextNodeId(
-        nodeId,
-        event.key,
-        this.layoutService.isHorizontal(),
-      );
-      if (!targetId) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      this.selectionService.select([targetId]);
-      this.nodeVisibilityService.ensureVisible(targetId);
-      queueMicrotask(() => this.getNodeHostEl(targetId)?.focus());
-      return;
-    }
-
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.sidebarService.expandSidebar(this.getNodeHostEl(nodeId));
-      return;
-    }
-    if (event.key === ' ') {
-      event.preventDefault();
-      void this.toggleExpand(nodeId);
-      return;
-    }
-    if (event.altKey && isArrowKey(event.key)) {
-      event.preventDefault();
-      event.stopPropagation();
-      const action = this.keyboardNavigationService.getAddPositionForArrow(
-        event.key,
-        this.layoutService.isHorizontal(),
-      );
-      if (action) void this.addButtonService.addNode(nodeId, action);
-    }
-  }
-
-  private getNodeHostEl(nodeId: string): HTMLElement | null {
-    const host = this.diagramElement()?.nativeElement as HTMLElement | undefined;
-    // ng-diagram's <ng-diagram-node> wrapper also carries data-node-id but isn't focusable,
-    // so narrow the match to our treeitem host element.
-    const el = host?.querySelector(`[role="treeitem"][data-node-id="${CSS.escape(nodeId)}"]`);
-    return el instanceof HTMLElement ? el : null;
-  }
-
-  private setFallbackFocusTarget() {
-    effect(() => {
-      this.sidebarService.setFallbackFocusTarget(this.diagramElement()?.nativeElement ?? null);
-    });
-  }
-
-  private async toggleExpand(nodeId: string): Promise<void> {
-    const result = this.expandCollapseService.prepareToggle(nodeId);
-    if (!result) return;
-    await this.modelApplyService.applyWithLayout(result.changes, {
-      visibility: { subtreeIds: result.toggledSubtreeIds, collapsing: result.collapsing },
-    });
-    this.nodeVisibilityService.ensureVisible(nodeId);
+    this.keyboardController.handle(event);
   }
 
   /** Fits all nodes in view, accounting for overlay insets plus extra padding. */
