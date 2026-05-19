@@ -9,6 +9,9 @@ import { ExpandCollapseService } from '../diagram/model/expand-collapse.service'
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
+import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
+import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
+import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from '../diagram/node-visibility/node-visibility.service';
 import { ViewportBoundsDirective } from '../diagram/node-visibility/viewport-bounds.directive';
@@ -52,6 +55,9 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     LayoutAnimationService,
     NodeVisibilityService,
     NodeVisibilityConfigService,
+    KeyboardNavigationService,
+    NodeFocusService,
+    DiagramKeyboardController,
   ],
 })
 export class OrgChartPageComponent {}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import {
   DiagramInitEvent,
   initializeModel,
@@ -19,6 +19,7 @@ import { ORG_CHART_CONFIG } from '../org-chart.config';
 import { PropertiesSidebarService } from '../properties-sidebar/properties-sidebar.service';
 import { diagramModel } from './data';
 import { EdgeComponent } from './edge.component';
+import { DiagramKeyboardController } from './keyboard-navigation/diagram-keyboard.controller';
 import { LayoutGate } from './layout/layout-gate';
 import { LayoutService, type LayoutDirection } from './layout/layout.service';
 import { isOrgChartNode } from './model/guards';
@@ -59,6 +60,15 @@ export class DiagramComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
+  private readonly keyboardController = inject(DiagramKeyboardController);
+
+  private readonly diagramElement = viewChild('diagramElement', { read: ElementRef<HTMLElement> });
+
+  constructor() {
+    effect(() => {
+      this.sidebarService.setFallbackFocusTarget(this.diagramElement()?.nativeElement ?? null);
+    });
+  }
 
   protected readonly isLayoutInitialized = this.layoutGate.isInitialized;
   readonly isLayoutIdle = this.layoutGate.isIdle;
@@ -128,6 +138,10 @@ export class DiagramComponent {
     if (hasOrgChartNodes) {
       this.sidebarService.expandSidebar();
     }
+  }
+
+  onDiagramKeydown(event: KeyboardEvent): void {
+    this.keyboardController.handle(event);
   }
 
   /** Fits all nodes in view, accounting for overlay insets plus extra padding. */
