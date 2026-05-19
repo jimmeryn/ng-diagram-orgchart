@@ -26,7 +26,10 @@ import { PropertiesSidebarService } from './properties-sidebar.service';
   templateUrl: './properties-sidebar.component.html',
   styleUrl: './properties-sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[class.expanded]': 'isExpanded()' },
+  host: {
+    '[class.expanded]': 'isExpanded()',
+    '(keydown.escape)': 'onEscape($event)',
+  },
 })
 export class PropertiesSidebarComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
@@ -39,8 +42,16 @@ export class PropertiesSidebarComponent {
   protected readonly reportsToCandidateNodes = this.sidebarService.reportsToCandidateNodes;
   protected readonly roleOptions = this.sidebarService.roleOptions;
 
-  protected onHeaderToggle(): void {
-    this.sidebarService.toggleSidebarVisibility();
+  protected onHeaderToggle(event: MouseEvent): void {
+    const opener = event.currentTarget as HTMLElement | null;
+    this.sidebarService.toggleSidebarVisibility(opener);
+  }
+
+  protected onEscape(event: Event): void {
+    if (this.isExpanded()) {
+      event.stopPropagation();
+      this.sidebarService.closeSidebar();
+    }
   }
 
   protected onRemoveNode(): void {

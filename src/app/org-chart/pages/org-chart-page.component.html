@@ -1,3 +1,17 @@
+<div class="keyboard-help">
+  <a class="skip-link" href="#main-content">Skip to diagram</a>
+  <p id="diagram-instructions" class="diagram-instructions">
+    Use the arrow keys to move the selected node on the canvas.
+    Use <kbd>Shift</kbd>+arrow keys to move selection between nodes.
+    Use <kbd>Alt</kbd>+arrow keys to add a new node next to the focused node
+    (down or right for a child; left/right or up/down for a sibling, depending on layout).
+    Press <kbd>Enter</kbd> to open the properties panel for the focused node.
+    Press <kbd>Space</kbd> to expand or collapse the focused node.
+    Press <kbd>Delete</kbd> to remove the selected node.
+  </p>
+</div>
+<h1 class="visually-hidden">Org Chart</h1>
+
 <app-diagram #diagram appViewportBounds />
 <div class="ui-overlay">
   <app-top-navbar class="top-navbar" appViewportOverlay />
@@ -14,3 +28,4 @@
     <app-minimap-panel />
   </div>
 </div>
+<div class="visually-hidden" aria-live="polite" id="selection-announcer"></div>

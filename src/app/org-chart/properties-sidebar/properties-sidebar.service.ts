@@ -20,6 +20,8 @@ export class PropertiesSidebarService {
   private readonly hierarchyService = inject(HierarchyService);
 
   readonly isExpanded = signal(false);
+  private openerEl: HTMLElement | null = null;
+  private fallbackFocusTarget: HTMLElement | null = null;
 
   readonly selectedOrgChartNodes = computed<Node<OrgChartNodeData>[]>(() =>
     this.selectionService.selection().nodes.filter(isOrgChartNode),
@@ -56,11 +58,28 @@ export class PropertiesSidebarService {
     return 'single';
   });
 
-  expandSidebar(): void {
+  expandSidebar(opener?: HTMLElement | null): void {
+    this.openerEl = opener ?? this.openerEl;
     this.isExpanded.set(true);
   }
 
-  toggleSidebarVisibility(): void {
-    this.isExpanded.update((v) => !v);
+  toggleSidebarVisibility(opener?: HTMLElement | null): void {
+    if (this.isExpanded()) {
+      this.closeSidebar();
+    } else {
+      this.expandSidebar(opener);
+    }
+  }
+
+  setFallbackFocusTarget(el: HTMLElement | null): void {
+    this.fallbackFocusTarget = el;
+  }
+
+  closeSidebar(): void {
+    if (!this.isExpanded()) return;
+    const target = this.openerEl ?? this.fallbackFocusTarget;
+    this.openerEl = null;
+    this.isExpanded.set(false);
+    queueMicrotask(() => target?.focus());
   }
 }

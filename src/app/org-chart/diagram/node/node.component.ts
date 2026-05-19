@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import {
   NgDiagramModelService,
   NgDiagramPortComponent,
+  NgDiagramSelectionService,
   NgDiagramViewportService,
   type NgDiagramNodeTemplate,
   type Node,
@@ -9,8 +10,8 @@ import {
 import { DragReorderService } from '../../drag-reorder/drag-reorder.service';
 import { ORG_CHART_CONFIG } from '../../org-chart.config';
 import { LayoutService } from '../layout/layout.service';
-import { getHasChildren, getIsHidden } from '../model/data-getters';
-import { isOccupiedNodeData, isVacantNode } from '../model/guards';
+import { getHasChildren, getIsCollapsed, getIsHidden } from '../model/data-getters';
+import { isOccupiedNodeData, isOrgChartNode, isVacantNode } from '../model/guards';
 import { getColorForRole, type OrgChartNodeData } from '../model/interfaces';
 import { AddButtonComponent } from './components/add-button/add-button.component';
 import { CompactNodeComponent } from './components/compact-node/compact-node.component';
@@ -51,8 +52,15 @@ type NodeVariant = 'vacant' | 'compact' | 'full';
     '[class.is-hidden]': 'isHidden()',
     '[style.visibility]': 'isHidden() ? "hidden" : null',
     '[style.pointer-events]': 'isHidden() ? "none" : null',
+    '[attr.role]': '"treeitem"',
+    '[attr.tabindex]': 'isFocusable() ? 0 : -1',
+    '[attr.aria-selected]': 'node().selected ? "true" : "false"',
+    '[attr.aria-expanded]': 'ariaExpanded()',
+    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.data-node-id]': 'node().id',
     '(mouseenter)': 'isNodeHovered.set(true)',
     '(mouseleave)': 'isNodeHovered.set(false)',
+    '(focus)': 'onHostFocus()',
   },
 })
 export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
@@ -61,6 +69,7 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   private readonly viewportService = inject(NgDiagramViewportService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly dragReorderService = inject(DragReorderService);
+  private readonly selectionService = inject(NgDiagramSelectionService);
 
   node = input.required<Node<OrgChartNodeData>>();
 
@@ -102,4 +111,35 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   protected showAddButtons = computed(
     () => this.isNodeHovered() && !this.dragReorderService.isReorderActive(),
   );
+
+  protected readonly isFocusable = computed(() => {
+    if (this.node().selected) return true;
+    const orgSelectedNodes = this.selectionService.selection().nodes.filter(isOrgChartNode);
+    return orgSelectedNodes.length === 0 && this.isRoot();
+  });
+
+  protected readonly ariaExpanded = computed<string | null>(() => {
+    if (!this.hasChildren()) return null;
+    return getIsCollapsed(this.node()) ? 'false' : 'true';
+  });
+
+  protected onHostFocus(): void {
+    if (!this.node().selected) {
+      this.selectionService.select([this.node().id]);
+    }
+  }
+
+  protected readonly ariaLabel = computed(() => {
+    const node = this.node();
+    const data = node.data;
+    if (data.type === 'vacant') {
+      return data.role ? `Vacant position, ${data.role}` : 'Vacant position';
+    }
+    const parts: string[] = [data.fullName];
+    if (data.role) parts.push(data.role);
+    if (data.reports > 0) {
+      parts.push(`${data.reports} ${data.reports === 1 ? 'report' : 'reports'}`);
+    }
+    return parts.join(', ');
+  });
 }

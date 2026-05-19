@@ -1,13 +1,24 @@
-<div class="diagram" [class.initialized]="isLayoutInitialized()">
-  <ng-diagram
-    [model]="model"
-    [config]="config"
-    [nodeTemplateMap]="nodeTemplateMap"
-    [edgeTemplateMap]="edgeTemplateMap"
-    (selectionRemoved)="onSelectionRemoved($event)"
-    (selectionGestureEnded)="onSelectionGestureEnded($event)"
-    (diagramInit)="onDiagramInit($event)"
-  >
-    <ng-diagram-background type="dots" />
-  </ng-diagram>
-</div>
+<main
+  id="main-content"
+  class="diagram"
+  [class.initialized]="isLayoutInitialized()"
+  tabindex="0"
+  aria-label="Organization chart"
+  aria-describedby="diagram-instructions"
+  (keydown)="onDiagramKeydown($event)"
+>
+  <div role="tree" aria-label="Organization tree" class="tree-wrapper">
+    <ng-diagram
+      #diagramElement
+      [model]="model"
+      [config]="config"
+      [nodeTemplateMap]="nodeTemplateMap"
+      [edgeTemplateMap]="edgeTemplateMap"
+      (selectionRemoved)="onSelectionRemoved($event)"
+      (selectionGestureEnded)="onSelectionGestureEnded($event)"
+      (diagramInit)="onDiagramInit($event)"
+    >
+      <ng-diagram-background type="dots" />
+    </ng-diagram>
+  </div>
+</main>

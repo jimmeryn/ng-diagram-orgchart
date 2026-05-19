@@ -12,6 +12,12 @@ const ACTION_MAP: Record<DropZone, AddNodeAction> = {
   bottom: 'child',
 };
 
+const ARIA_LABEL_MAP: Record<DropZone, string> = {
+  left: 'Add sibling before',
+  right: 'Add sibling after',
+  bottom: 'Add child node',
+};
+
 @Component({
   selector: 'app-add-button',
   templateUrl: './add-button.component.html',
@@ -33,6 +39,7 @@ export class AddButtonComponent {
 
   protected isHorizontal = this.layoutService.isHorizontal;
   protected isDisabled = computed(() => !this.layoutGate.isIdle());
+  protected ariaLabel = computed(() => ARIA_LABEL_MAP[this.position()]);
 
   async onAdd(event: MouseEvent): Promise<void> {
     event.stopPropagation();

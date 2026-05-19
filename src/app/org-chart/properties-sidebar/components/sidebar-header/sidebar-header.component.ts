@@ -8,5 +8,5 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 })
 export class SidebarHeaderComponent {
   isExpanded = input.required<boolean>();
-  toggled = output<void>();
+  toggled = output<MouseEvent>();
 }
