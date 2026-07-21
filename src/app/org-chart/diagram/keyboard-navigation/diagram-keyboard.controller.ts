@@ -108,6 +108,6 @@ export class DiagramKeyboardController {
     );
     if (!action) return;
     const newNodeId = await this.addButton.addNode(nodeId, action);
-    if (newNodeId) this.nodeFocus.focus(newNodeId);
+    if (newNodeId != null) this.nodeFocus.focus(newNodeId);
   }
 }

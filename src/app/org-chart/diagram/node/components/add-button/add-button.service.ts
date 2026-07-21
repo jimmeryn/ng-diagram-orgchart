@@ -11,7 +11,7 @@ export class AddButtonService {
 
   async addNode(nodeId: string, action: AddNodeAction): Promise<string | undefined> {
     const newNodeId = await this.addNodeService.addNode(nodeId, action);
-    if (!newNodeId) return undefined;
+    if (newNodeId == null) return undefined;
     this.selectionService.select([newNodeId]);
     requestAnimationFrame(() => {
       this.nodeVisibilityService.ensureVisible(newNodeId);

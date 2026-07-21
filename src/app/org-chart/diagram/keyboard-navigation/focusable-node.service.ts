@@ -26,6 +26,6 @@ export class FocusableNodeService {
 
   focusCurrent(): void {
     const id = this.currentId();
-    if (id) this.nodeFocusService.focus(id);
+    if (id != null) this.nodeFocusService.focus(id);
   }
 }

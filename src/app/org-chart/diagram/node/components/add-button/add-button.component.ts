@@ -45,7 +45,10 @@ export class AddButtonComponent {
 
   async onAdd(event: MouseEvent): Promise<void> {
     event.stopPropagation();
-    const newNodeId = await this.addButtonService.addNode(this.nodeId(), ACTION_MAP[this.position()]);
-    if (newNodeId) this.sidebarService.expandSidebar();
+    const newNodeId = await this.addButtonService.addNode(
+      this.nodeId(),
+      ACTION_MAP[this.position()],
+    );
+    if (newNodeId != null) this.sidebarService.expandSidebar();
   }
 }
