@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import type { DropZone } from '../../../../drag-reorder/zone-detection/index';
+import { PropertiesSidebarService } from '../../../../properties-sidebar/properties-sidebar.service';
 import { LayoutGate } from '../../../layout/layout-gate';
 import { LayoutService } from '../../../layout/layout.service';
 import type { AddNodeAction } from '../../../model/add-node.service';
@@ -31,6 +32,7 @@ const ARIA_LABEL_MAP: Record<DropZone, string> = {
 })
 export class AddButtonComponent {
   private readonly addButtonService = inject(AddButtonService);
+  private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly layoutGate = inject(LayoutGate);
   private readonly layoutService = inject(LayoutService);
 
@@ -43,6 +45,10 @@ export class AddButtonComponent {
 
   async onAdd(event: MouseEvent): Promise<void> {
     event.stopPropagation();
-    await this.addButtonService.addNode(this.nodeId(), ACTION_MAP[this.position()]);
+    const newNodeId = await this.addButtonService.addNode(
+      this.nodeId(),
+      ACTION_MAP[this.position()],
+    );
+    if (newNodeId != null) this.sidebarService.expandSidebar();
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { provideNgDiagram } from 'ng-diagram';
 import { LayoutAnimationService } from '../diagram/animation/layout-animation.service';
 import { DiagramComponent } from '../diagram/diagram.component';
@@ -10,6 +10,7 @@ import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
 import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
+import { FocusableNodeService } from '../diagram/keyboard-navigation/focusable-node.service';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
@@ -57,7 +58,15 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     NodeVisibilityConfigService,
     KeyboardNavigationService,
     NodeFocusService,
+    FocusableNodeService,
     DiagramKeyboardController,
   ],
 })
-export class OrgChartPageComponent {}
+export class OrgChartPageComponent {
+  private readonly focusableNode = inject(FocusableNodeService);
+
+  onSkipToDiagram(event: Event): void {
+    event.preventDefault();
+    this.focusableNode.focusCurrent();
+  }
+}

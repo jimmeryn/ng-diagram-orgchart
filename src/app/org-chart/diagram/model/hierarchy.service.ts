@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
 import { getHasChildren, getIsCollapsed } from './data-getters';
 import { ExpandCollapseService } from './expand-collapse.service';
+import { isOrgChartNode } from './guards';
 import { EdgeTemplateType, HAS_CHILDREN, type OrgChartNodeData } from './interfaces';
 import { ModelChanges } from './model-changes';
 import { SortOrderService } from './sort-order.service';
@@ -25,6 +26,16 @@ export class HierarchyService {
       .getConnectedEdges(nodeId)
       .find((e) => e.target === nodeId);
     return incomingEdge?.source ?? null;
+  }
+
+  /** IDs of org-chart nodes with no parent (roots of the forest). */
+  getRootIds(): string[] {
+    const targets = new Set(this.modelService.edges().map((e) => e.target));
+    return this.modelService
+      .getModel()
+      .getNodes()
+      .filter((n) => isOrgChartNode(n) && !targets.has(n.id))
+      .map((n) => n.id);
   }
 
   /** Collects all descendant IDs below the given node (excluding the node itself). */

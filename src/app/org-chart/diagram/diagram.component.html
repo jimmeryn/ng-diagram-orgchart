@@ -2,14 +2,19 @@
   id="main-content"
   class="diagram"
   [class.initialized]="isLayoutInitialized()"
-  tabindex="0"
   aria-label="Organization chart"
-  aria-describedby="diagram-instructions"
+  tabindex="-1"
   (keydown)="onDiagramKeydown($event)"
 >
-  <div role="tree" aria-label="Organization tree" class="tree-wrapper">
+  <div
+    role="tree"
+    aria-label="Organization tree"
+    aria-describedby="diagram-instructions"
+    class="tree-wrapper"
+  >
     <ng-diagram
       #diagramElement
+      appSuppressLibraryTabStops
       [model]="model"
       [config]="config"
       [nodeTemplateMap]="nodeTemplateMap"

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import {
   DiagramInitEvent,
   initializeModel,
@@ -31,6 +38,7 @@ import { SortOrderService } from './model/sort-order.service';
 import { NodeVisibilityConfigService } from './node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from './node-visibility/node-visibility.service';
 import { NodeComponent } from './node/node.component';
+import { SuppressLibraryTabStopsDirective } from './suppress-library-tab-stops.directive';
 
 /**
  * Org Chart Diagram
@@ -42,7 +50,7 @@ import { NodeComponent } from './node/node.component';
  */
 @Component({
   selector: 'app-diagram',
-  imports: [NgDiagramComponent, NgDiagramBackgroundComponent],
+  imports: [NgDiagramComponent, NgDiagramBackgroundComponent, SuppressLibraryTabStopsDirective],
   templateUrl: './diagram.component.html',
   styleUrl: './diagram.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

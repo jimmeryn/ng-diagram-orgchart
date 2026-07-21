@@ -106,6 +106,8 @@ export class DiagramKeyboardController {
       event.key as ArrowKey,
       this.layoutService.isHorizontal(),
     );
-    if (action) await this.addButton.addNode(nodeId, action);
+    if (!action) return;
+    const newNodeId = await this.addButton.addNode(nodeId, action);
+    if (newNodeId != null) this.nodeFocus.focus(newNodeId);
   }
 }
