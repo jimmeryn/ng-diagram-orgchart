@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import {
   DiagramInitEvent,
   initializeModel,
@@ -31,6 +38,7 @@ import { SortOrderService } from './model/sort-order.service';
 import { NodeVisibilityConfigService } from './node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from './node-visibility/node-visibility.service';
 import { NodeComponent } from './node/node.component';
+import { SuppressLibraryTabStopsDirective } from './suppress-library-tab-stops.directive';
 
 /**
  * Org Chart Diagram
@@ -42,7 +50,7 @@ import { NodeComponent } from './node/node.component';
  */
 @Component({
   selector: 'app-diagram',
-  imports: [NgDiagramComponent, NgDiagramBackgroundComponent],
+  imports: [NgDiagramComponent, NgDiagramBackgroundComponent, SuppressLibraryTabStopsDirective],
   templateUrl: './diagram.component.html',
   styleUrl: './diagram.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -111,21 +119,6 @@ export class DiagramComponent {
     await this.modelApplyService.applyWithLayout(changes, { animate: false });
     this.dragReorderService.init();
     this.zoomToFit();
-    this.suppressLibraryTabStops();
-  }
-
-  // The ng-diagram element and its watermark link both apply tabindex="0" with
-  // no opt-out via library config. Neither shows a meaningful focus indicator
-  // here. Drop both from the sequential tab order so Tab from outside lands
-  // directly on a node. The library's pointerdown handler still programmatically
-  // focuses the canvas on click (tabindex=-1 stays focusable for .focus() calls),
-  // and the document-level keydown shortcuts still fire when any descendant
-  // (e.g. a node) holds focus.
-  private suppressLibraryTabStops(): void {
-    const host = this.diagramElement()?.nativeElement;
-    if (!host) return;
-    host.setAttribute('tabindex', '-1');
-    host.querySelector('ng-diagram-watermark a')?.setAttribute('tabindex', '-1');
   }
 
   /**
