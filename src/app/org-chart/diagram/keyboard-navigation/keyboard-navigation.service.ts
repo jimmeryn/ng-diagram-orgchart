@@ -32,9 +32,9 @@ export class KeyboardNavigationService {
       case 'firstChild':
         return this.findFirstVisibleChild(currentId);
       case 'prevSibling':
-        return this.findSibling(currentId, -1);
+        return this.findSibling(currentId, -1, isHorizontal);
       case 'nextSibling':
-        return this.findSibling(currentId, 1);
+        return this.findSibling(currentId, 1, isHorizontal);
     }
   }
 
@@ -60,15 +60,32 @@ export class KeyboardNavigationService {
     return null;
   }
 
-  private findSibling(currentId: string, step: number): string | null {
+  private findSibling(currentId: string, step: number, isHorizontal: boolean): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
-    if (!parentId) return null;
-    const visibleSiblings = this.sortOrderService.getSortedChildren(parentId).filter((c) => {
-      const node = this.modelService.getNodeById(c.id);
+
+    const siblingIds = parentId
+      ? this.sortOrderService.getSortedChildren(parentId).map((c) => c.id)
+      : this.orderedRootIds(isHorizontal);
+
+    const visible = siblingIds.filter((id) => {
+      const node = this.modelService.getNodeById(id);
       return node && !getIsHidden(node);
     });
-    const idx = visibleSiblings.findIndex((c) => c.id === currentId);
+
+    const idx = visible.indexOf(currentId);
     if (idx < 0) return null;
-    return visibleSiblings.at(idx + step)?.id ?? null;
+
+    const targetIdx = idx + step;
+    if (targetIdx < 0 || targetIdx >= visible.length) return null;
+    return visible[targetIdx];
+  }
+
+  private orderedRootIds(isHorizontal: boolean): string[] {
+    const axis = isHorizontal ? 'y' : 'x';
+    return this.hierarchyService
+      .getRootIds()
+      .map((id) => ({ id, pos: this.modelService.getNodeById(id)?.position[axis] ?? 0 }))
+      .sort((a, b) => a.pos - b.pos || a.id.localeCompare(b.id))
+      .map((r) => r.id);
   }
 }
