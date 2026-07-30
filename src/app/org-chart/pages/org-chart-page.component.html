@@ -1,30 +1,29 @@
 <div class="keyboard-help">
   <a class="skip-link" href="#main-content" (click)="onSkipToDiagram($event)">Skip to diagram</a>
   <p id="diagram-instructions" class="diagram-instructions">
-    Use the arrow keys to move the selected node on the canvas.
-    Use <kbd>Shift</kbd>+arrow keys to move selection between nodes.
-    Use <kbd>Alt</kbd>+arrow keys to add a new node next to the focused node
-    (down or right for a child; left/right or up/down for a sibling, depending on layout).
-    Press <kbd>Enter</kbd> to open the properties panel for the focused node.
-    Press <kbd>Space</kbd> to expand or collapse the focused node.
-    Press <kbd>Delete</kbd> to remove the selected node.
+    Use the arrow keys to move the selected node on the canvas. Use <kbd>Shift</kbd>+arrow keys to
+    move selection between nodes. Use <kbd>Alt</kbd>+arrow keys to add a new node next to the
+    focused node (down or right for a child; left/right or up/down for a sibling, depending on
+    layout). Press <kbd>Enter</kbd> to open the properties panel for the focused node. Press
+    <kbd>Space</kbd> to expand or collapse the focused node. Press <kbd>Delete</kbd> to remove the
+    selected node.
   </p>
 </div>
 <h1 class="visually-hidden">Org Chart</h1>
 
+<app-top-navbar class="top-navbar" appViewportOverlay />
+<div class="top-toolbar-wrapper">
+  <app-toolbar-horizontal
+    class="top-toolbar"
+    [direction]="diagram.direction()"
+    [disabled]="!diagram.isLayoutIdle()"
+    (directionChange)="diagram.changeDirection($event)"
+  />
+</div>
+
 <app-diagram #diagram appViewportBounds />
-<div class="ui-overlay">
-  <app-top-navbar class="top-navbar" appViewportOverlay />
-  <div class="top-toolbar-wrapper">
-    <app-toolbar-horizontal
-      class="top-toolbar"
-      [direction]="diagram.direction()"
-      [disabled]="!diagram.isLayoutIdle()"
-      (directionChange)="diagram.changeDirection($event)"
-    />
-  </div>
-  <div class="content-area">
-    <app-properties-sidebar appViewportOverlay />
-    <app-minimap-panel />
-  </div>
+
+<div class="content-area">
+  <app-properties-sidebar appViewportOverlay />
+  <app-minimap-panel />
 </div>
