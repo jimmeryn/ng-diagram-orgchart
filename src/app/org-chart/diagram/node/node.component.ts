@@ -7,6 +7,7 @@ import {
   inject,
   input,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   NgDiagramModelService,
@@ -84,7 +85,8 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
 
   constructor() {
     effect(() => {
-      if (this.nodeFocusService.current()?.id === this.node().id) {
+      const request = this.nodeFocusService.current();
+      if (request && request.id === untracked(this.nodeId)) {
         this.host.nativeElement.focus();
       }
     });
