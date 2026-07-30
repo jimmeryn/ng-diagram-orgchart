@@ -210,6 +210,7 @@ export class ComboboxComponent<T = unknown> implements FormValueControl<T | null
       case 'Escape':
         if (this.isOpen()) {
           event.preventDefault();
+          event.stopPropagation();
           this.closePanel();
           this.inputEl()?.nativeElement.focus();
         }
