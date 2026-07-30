@@ -1,8 +1,10 @@
 <main
+  #diagramMain
   id="main-content"
   class="diagram"
   [class.initialized]="isLayoutInitialized()"
   aria-label="Organization chart"
+  aria-describedby="diagram-instructions"
   tabindex="-1"
   (keydown)="onDiagramKeydown($event)"
 >
@@ -13,7 +15,6 @@
     class="tree-wrapper"
   >
     <ng-diagram
-      #diagramElement
       appSuppressLibraryTabStops
       [model]="model"
       [config]="config"

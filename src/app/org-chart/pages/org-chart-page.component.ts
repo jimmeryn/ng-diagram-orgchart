@@ -9,8 +9,9 @@ import { ExpandCollapseService } from '../diagram/model/expand-collapse.service'
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
+import { retainsRememberedNode } from '../diagram/keyboard-navigation/diagram-focus-level';
+import { DiagramFocusService } from '../diagram/keyboard-navigation/diagram-focus.service';
 import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
-import { FocusableNodeService } from '../diagram/keyboard-navigation/focusable-node.service';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
@@ -39,6 +40,9 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
   templateUrl: './org-chart-page.component.html',
   styleUrl: './org-chart-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(focusin)': 'onPageFocusIn($event)',
+  },
   providers: [
     provideNgDiagram(),
     // To customize org-chart settings, uncomment and modify:
@@ -58,15 +62,20 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     NodeVisibilityConfigService,
     KeyboardNavigationService,
     NodeFocusService,
-    FocusableNodeService,
+    DiagramFocusService,
     DiagramKeyboardController,
   ],
 })
 export class OrgChartPageComponent {
-  private readonly focusableNode = inject(FocusableNodeService);
+  private readonly diagramFocus = inject(DiagramFocusService);
 
   onSkipToDiagram(event: Event): void {
     event.preventDefault();
-    this.focusableNode.focusCurrent();
+    this.diagramFocus.focusEntryNode();
+  }
+
+  protected onPageFocusIn(event: FocusEvent): void {
+    if (retainsRememberedNode(event.target)) return;
+    this.diagramFocus.forgetNode();
   }
 }

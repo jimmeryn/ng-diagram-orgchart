@@ -43,6 +43,35 @@ export class KeyboardNavigationService {
     return direction ? DIRECTION_TO_ADD_ACTION[direction] : null;
   }
 
+  /** Visible nodes depth-first: every node immediately followed by its subtree. */
+  getVisibleTreeOrder(isHorizontal: boolean): string[] {
+    const order: string[] = [];
+    const visited = new Set<string>();
+    const stack = [...this.orderedRootIds(isHorizontal)].reverse();
+
+    while (stack.length > 0) {
+      const id = stack.pop()!;
+      if (visited.has(id)) continue;
+      visited.add(id);
+
+      const node = this.modelService.getNodeById(id);
+      if (!node || getIsHidden(node)) continue;
+      order.push(id);
+
+      const children = this.sortOrderService.getSortedChildren(id);
+      for (let i = children.length - 1; i >= 0; i--) stack.push(children[i].id);
+    }
+
+    return order;
+  }
+
+  getAdjacentNodeId(currentId: string, step: 1 | -1, isHorizontal: boolean): string | null {
+    const order = this.getVisibleTreeOrder(isHorizontal);
+    const index = order.indexOf(currentId);
+    if (index < 0) return null;
+    return order[index + step] ?? null;
+  }
+
   private findVisibleParent(currentId: string): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
     if (!parentId) return null;

@@ -12,17 +12,17 @@ import {
 import {
   NgDiagramModelService,
   NgDiagramPortComponent,
-  NgDiagramSelectionService,
   NgDiagramViewportService,
   type NgDiagramNodeTemplate,
   type Node,
 } from 'ng-diagram';
 import { DragReorderService } from '../../drag-reorder/drag-reorder.service';
 import { ORG_CHART_CONFIG } from '../../org-chart.config';
+import { DiagramFocusService } from '../keyboard-navigation/diagram-focus.service';
 import { NodeFocusService } from '../keyboard-navigation/node-focus.service';
 import { LayoutService } from '../layout/layout.service';
 import { getHasChildren, getIsCollapsed, getIsHidden } from '../model/data-getters';
-import { isOccupiedNodeData, isOrgChartNode, isVacantNode } from '../model/guards';
+import { isOccupiedNodeData, isVacantNode } from '../model/guards';
 import { getColorForRole, type OrgChartNodeData } from '../model/interfaces';
 import { AddButtonComponent } from './components/add-button/add-button.component';
 import { CompactNodeComponent } from './components/compact-node/compact-node.component';
@@ -64,13 +64,14 @@ type NodeVariant = 'vacant' | 'compact' | 'full';
     '[style.visibility]': 'isHidden() ? "hidden" : null',
     '[style.pointer-events]': 'isHidden() ? "none" : null',
     '[attr.role]': '"treeitem"',
-    '[attr.tabindex]': 'isFocusable() ? 0 : -1',
+    '[attr.tabindex]': 'isTabStop() ? 0 : -1',
+    '[attr.data-org-node-id]': 'nodeId()',
     '[attr.aria-selected]': 'node().selected',
     '[attr.aria-expanded]': 'ariaExpanded()',
     '[attr.aria-label]': 'ariaLabel()',
     '(mouseenter)': 'isNodeHovered.set(true)',
     '(mouseleave)': 'isNodeHovered.set(false)',
-    '(focus)': 'onHostFocus()',
+    '(focusin)': 'onFocusIn($event)',
   },
 })
 export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
@@ -79,15 +80,15 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   private readonly viewportService = inject(NgDiagramViewportService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly dragReorderService = inject(DragReorderService);
-  private readonly selectionService = inject(NgDiagramSelectionService);
   private readonly nodeFocusService = inject(NodeFocusService);
+  private readonly diagramFocus = inject(DiagramFocusService);
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
     effect(() => {
       const request = this.nodeFocusService.current();
       if (request && request.id === untracked(this.nodeId)) {
-        this.host.nativeElement.focus();
+        this.host.nativeElement.focus({ preventScroll: true });
       }
     });
   }
@@ -99,6 +100,7 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   protected isHorizontal = this.layoutService.isHorizontal;
 
   protected nodeId = computed(() => this.node().id);
+  protected isTabStop = computed(() => this.diagramFocus.entryNodeId() === this.nodeId());
   protected isHidden = computed(() => getIsHidden(this.node()));
   protected variant = computed<NodeVariant>(() => {
     if (isVacantNode(this.node())) return 'vacant';
@@ -133,21 +135,13 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
     () => this.isNodeHovered() && !this.dragReorderService.isReorderActive(),
   );
 
-  protected readonly isFocusable = computed(() => {
-    if (this.node().selected) return true;
-    const orgSelectedNodes = this.selectionService.selection().nodes.filter(isOrgChartNode);
-    return orgSelectedNodes.length === 0 && this.isRoot();
-  });
-
   protected readonly ariaExpanded = computed<boolean | null>(() => {
     if (!this.hasChildren()) return null;
     return !getIsCollapsed(this.node());
   });
 
-  protected onHostFocus(): void {
-    if (!this.node().selected) {
-      this.selectionService.select([this.node().id]);
-    }
+  protected onFocusIn(event: FocusEvent): void {
+    this.diagramFocus.handleNodeFocus(this.nodeId(), event.relatedTarget);
   }
 
   protected readonly ariaLabel = computed(() => {

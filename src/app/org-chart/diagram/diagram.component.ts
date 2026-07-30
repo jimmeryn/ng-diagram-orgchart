@@ -26,6 +26,7 @@ import { ORG_CHART_CONFIG } from '../org-chart.config';
 import { PropertiesSidebarService } from '../properties-sidebar/properties-sidebar.service';
 import { diagramModel } from './data';
 import { EdgeComponent } from './edge.component';
+import { DiagramFocusService } from './keyboard-navigation/diagram-focus.service';
 import { DiagramKeyboardController } from './keyboard-navigation/diagram-keyboard.controller';
 import { LayoutGate } from './layout/layout-gate';
 import { LayoutService, type LayoutDirection } from './layout/layout.service';
@@ -69,12 +70,14 @@ export class DiagramComponent {
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
   private readonly keyboardController = inject(DiagramKeyboardController);
+  private readonly diagramFocus = inject(DiagramFocusService);
 
-  private readonly diagramElement = viewChild('diagramElement', { read: ElementRef<HTMLElement> });
+  private readonly diagramMain = viewChild('diagramMain', { read: ElementRef<HTMLElement> });
 
   constructor() {
     effect(() => {
-      this.sidebarService.setFallbackFocusTarget(this.diagramElement()?.nativeElement ?? null);
+      const element = this.diagramMain()?.nativeElement ?? null;
+      this.sidebarService.setFallbackFocusTarget(element);
     });
   }
 
@@ -127,17 +130,19 @@ export class DiagramComponent {
    * button is removed. Always re-layout to reposition remaining nodes.
    */
   async onSelectionRemoved(event: SelectionRemovedEvent): Promise<void> {
-    if (event.deletedEdges.length === 0) return;
+    if (event.deletedEdges.length > 0) {
+      const parentIds = [...new Set(event.deletedEdges.map((e) => e.source))];
+      const changes = new ModelChanges();
+      this.hierarchyService.clearHasChildrenFlags(parentIds, changes);
 
-    const parentIds = [...new Set(event.deletedEdges.map((e) => e.source))];
-    const changes = new ModelChanges();
-    this.hierarchyService.clearHasChildrenFlags(parentIds, changes);
+      await this.modelApplyService.applyWithLayout(changes);
 
-    await this.modelApplyService.applyWithLayout(changes);
-
-    if (parentIds.length > 0) {
-      this.nodeVisibilityService.ensureVisible(parentIds[0]);
+      if (parentIds.length > 0) {
+        this.nodeVisibilityService.ensureVisible(parentIds[0]);
+      }
     }
+
+    this.diagramFocus.recoverFocusIfLost();
   }
 
   /** Opens the properties sidebar when org-chart nodes are selected. */
