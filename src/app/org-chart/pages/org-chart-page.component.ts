@@ -9,7 +9,6 @@ import { ExpandCollapseService } from '../diagram/model/expand-collapse.service'
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
-import { retainsRememberedNode } from '../diagram/keyboard-navigation/diagram-focus-level';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/diagram-focus.service';
 import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
@@ -42,6 +41,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(focusin)': 'onPageFocusIn($event)',
+    '(focusout)': 'onPageFocusOut($event)',
   },
   providers: [
     provideNgDiagram(),
@@ -75,7 +75,10 @@ export class OrgChartPageComponent {
   }
 
   protected onPageFocusIn(event: FocusEvent): void {
-    if (retainsRememberedNode(event.target)) return;
-    this.diagramFocus.forgetNode();
+    this.diagramFocus.handlePageFocusIn(event.target);
+  }
+
+  protected onPageFocusOut(event: FocusEvent): void {
+    this.diagramFocus.handlePageFocusOut(event.relatedTarget);
   }
 }

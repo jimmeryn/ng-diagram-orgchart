@@ -57,6 +57,11 @@
   &--leaving {
     opacity: 0;
   }
+
+  &:focus-visible {
+    outline: var(--ngd-primitive-even-2) solid var(--ngd-input-stroke-primary-focus);
+    outline-offset: var(--ngd-primitive-even-2);
+  }
 }
 
 :host(.layout-horizontal) .add-btn {

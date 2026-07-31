@@ -1,21 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
-import type { AddNodeAction } from '../model/add-node.service';
 import { getIsHidden } from '../model/data-getters';
 import { HierarchyService } from '../model/hierarchy.service';
 import { SortOrderService } from '../model/sort-order.service';
-import { getArrowStrategy, type ArrowKey, type NavDirection } from './arrow-keys';
-
-const DIRECTION_TO_ADD_ACTION: Record<NavDirection, AddNodeAction | null> = {
-  parent: null,
-  firstChild: 'child',
-  prevSibling: 'siblingBefore',
-  nextSibling: 'siblingAfter',
-};
+import { getArrowStrategy, type ArrowKey } from './arrow-keys';
 
 /**
- * Translates arrow keys into navigation targets and add-node positions based on
- * layout orientation. Skips nodes hidden by a collapsed ancestor.
+ * Translates arrow keys into navigation targets based on layout orientation.
+ * Skips nodes hidden by a collapsed ancestor.
  */
 @Injectable()
 export class KeyboardNavigationService {
@@ -36,11 +28,6 @@ export class KeyboardNavigationService {
       case 'nextSibling':
         return this.findSibling(currentId, 1, isHorizontal);
     }
-  }
-
-  getAddPositionForArrow(arrowKey: ArrowKey, isHorizontal: boolean): AddNodeAction | null {
-    const direction = getArrowStrategy(isHorizontal).toDirection(arrowKey);
-    return direction ? DIRECTION_TO_ADD_ACTION[direction] : null;
   }
 
   /** Visible nodes depth-first: every node immediately followed by its subtree. */

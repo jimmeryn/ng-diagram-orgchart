@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -20,6 +21,7 @@ import { DragReorderService } from '../../drag-reorder/drag-reorder.service';
 import { ORG_CHART_CONFIG } from '../../org-chart.config';
 import { DiagramFocusService } from '../keyboard-navigation/diagram-focus.service';
 import { NodeFocusService } from '../keyboard-navigation/node-focus.service';
+import { focusFirstNodeAction } from '../keyboard-navigation/node-actions';
 import { LayoutService } from '../layout/layout.service';
 import { getHasChildren, getIsCollapsed, getIsHidden } from '../model/data-getters';
 import { isOccupiedNodeData, isVacantNode } from '../model/guards';
@@ -87,8 +89,15 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   constructor() {
     effect(() => {
       const request = this.nodeFocusService.current();
-      if (request && request.id === untracked(this.nodeId)) {
+      if (request?.target === 'host' && request.id === untracked(this.nodeId)) {
         this.host.nativeElement.focus({ preventScroll: true });
+      }
+    });
+
+    afterRenderEffect(() => {
+      const request = this.nodeFocusService.current();
+      if (request?.target === 'firstAction' && request.id === untracked(this.nodeId)) {
+        focusFirstNodeAction(this.host.nativeElement);
       }
     });
   }
@@ -131,8 +140,12 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
     const connectedEdges = this.modelService.getConnectedEdges(id);
     return !connectedEdges.some((e) => e.target === id);
   });
+  protected readonly containsFocus = computed(
+    () => this.diagramFocus.nodeWithFocusId() === this.nodeId(),
+  );
   protected showAddButtons = computed(
-    () => this.isNodeHovered() && !this.dragReorderService.isReorderActive(),
+    () =>
+      (this.isNodeHovered() || this.containsFocus()) && !this.dragReorderService.isReorderActive(),
   );
 
   protected readonly ariaExpanded = computed<boolean | null>(() => {

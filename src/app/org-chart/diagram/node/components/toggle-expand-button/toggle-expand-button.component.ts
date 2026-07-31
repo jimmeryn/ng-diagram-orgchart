@@ -42,6 +42,7 @@ export class ToggleExpandButtonComponent {
 
   async onToggle(event: MouseEvent): Promise<void> {
     event.stopPropagation();
+    if (this.isDisabled()) return;
 
     const result = this.expandCollapseService.prepareToggle(this.node().id);
     if (!result) return;

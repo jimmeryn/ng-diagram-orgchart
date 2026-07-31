@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
 import { LayoutService } from '../layout/layout.service';
 import { NodeVisibilityService } from '../node-visibility/node-visibility.service';
-import { isInsideDiagram } from './diagram-focus-level';
+import { isInsideDiagram, resolveDiagramFocus, retainsRememberedNode } from './diagram-focus-level';
 import { KeyboardNavigationService } from './keyboard-navigation.service';
 import { NodeFocusService } from './node-focus.service';
 
@@ -21,6 +21,10 @@ export class DiagramFocusService {
   private readonly modelService = inject(NgDiagramModelService);
 
   private readonly lastFocusedNodeId = signal<string | null>(null);
+  private readonly nodeWithFocus = signal<string | null>(null);
+
+  /** The node that currently contains focus — its host or one of its action buttons. */
+  readonly nodeWithFocusId = this.nodeWithFocus.asReadonly();
 
   readonly entryNodeId = computed<string | null>(() => {
     this.modelService.nodes();
@@ -38,8 +42,25 @@ export class DiagramFocusService {
     this.nodeVisibility.ensureVisible(nodeId);
   }
 
-  forgetNode(): void {
+  /**
+   * Reacts to focus landing anywhere on the page: tracks which node contains focus, and
+   * drops the remembered node once focus leaves the diagram and its properties panel.
+   */
+  handlePageFocusIn(target: EventTarget | null): void {
+    const focus = resolveDiagramFocus(target);
+    this.nodeWithFocus.set(focus.level === 'surface' ? null : focus.nodeId);
+    if (retainsRememberedNode(target)) return;
     this.lastFocusedNodeId.set(null);
+  }
+
+  /** Clears the focus-containment state when focus is lost to the document body. */
+  handlePageFocusOut(relatedTarget: EventTarget | null): void {
+    if (relatedTarget !== null) return;
+    requestAnimationFrame(() => {
+      if (!document.hasFocus()) return;
+      if (document.activeElement !== document.body) return;
+      this.nodeWithFocus.set(null);
+    });
   }
 
   focusEntryNode(): void {
