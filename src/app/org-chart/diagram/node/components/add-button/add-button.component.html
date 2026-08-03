@@ -5,7 +5,6 @@
   animate.leave="add-btn--leaving"
   [appAddButtonPosition]="position()"
   [attr.data-node-action]="action()"
-  [attr.aria-disabled]="isDisabled()"
   [attr.aria-label]="ariaLabel()"
   (pointerdown)="$event.stopPropagation()"
   (click)="onAdd($event)"
