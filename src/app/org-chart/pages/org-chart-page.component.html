@@ -1,17 +1,11 @@
 <div class="keyboard-help">
   <a class="skip-link" href="#main-content" (click)="onSkipToDiagram($event)">Skip to diagram</a>
-  <p id="diagram-instructions" class="diagram-instructions">
-    Press <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> to move between nodes in reporting
-    order. Press <kbd>Enter</kbd> on a node to select it and move to its buttons — add a report, add
-    a colleague before or after it, and expand or collapse it; <kbd>Tab</kbd> moves between those
-    buttons and <kbd>Escape</kbd> returns to the node. Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> on a
-    node to select it and open the properties panel. Press <kbd>Escape</kbd> on a node to clear the
-    selection. Press <kbd>Space</kbd> to expand or collapse the focused node. Use
-    <kbd>Shift</kbd>+arrow keys to move between nodes. Arrow keys on their own move the selected
-    node on the canvas, or pan the canvas when nothing is selected. Press <kbd>Delete</kbd> to
-    remove the selected node.
-  </p>
+  <app-keyboard-shortcuts-trigger variant="link" />
 </div>
+<p id="diagram-instructions" class="visually-hidden">
+  Tab moves between nodes. Enter selects a node and moves to its buttons; Escape goes back. Use the
+  Keyboard shortcuts button at the top of the page, or press question mark, for the full list.
+</p>
 <h1 class="visually-hidden">Org Chart</h1>
 
 <app-top-navbar class="top-navbar" appViewportOverlay />
@@ -30,3 +24,5 @@
   <app-properties-sidebar appViewportOverlay />
   <app-minimap-panel />
 </div>
+
+<app-keyboard-shortcuts-dialog />

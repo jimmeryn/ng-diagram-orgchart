@@ -1,0 +1,17 @@
+<dialog
+  #dialogEl
+  class="modal"
+  [attr.aria-labelledby]="headingId"
+  [attr.aria-describedby]="describedBy()"
+  (close)="onClose()"
+>
+  <h2 #headingEl [id]="headingId" class="h7 modal-heading" tabindex="-1">{{ heading() }}</h2>
+  <!-- The `role` attribute is necessary for the name. ARIA does not allow a name on an element
+       that has no role. -->
+  <div class="modal-body" role="group" tabindex="0" [attr.aria-labelledby]="headingId">
+    <ng-content />
+  </div>
+  <div class="modal-footer">
+    <ng-content select="[modalFooter]" />
+  </div>
+</dialog>

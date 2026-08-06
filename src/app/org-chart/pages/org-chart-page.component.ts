@@ -11,6 +11,7 @@ import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/diagram-focus.service';
 import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
+import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/diagram-modal-focus-restore';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
@@ -18,6 +19,10 @@ import { NodeVisibilityService } from '../diagram/node-visibility/node-visibilit
 import { ViewportBoundsDirective } from '../diagram/node-visibility/viewport-bounds.directive';
 import { ViewportOverlayDirective } from '../diagram/node-visibility/viewport-overlay.directive';
 import { AddButtonService } from '../diagram/node/components/add-button/add-button.service';
+import { KeyboardShortcutsDialogComponent } from '../keyboard-shortcuts/keyboard-shortcuts-dialog.component';
+import { KeyboardShortcutsHotkeyDirective } from '../keyboard-shortcuts/keyboard-shortcuts-hotkey.directive';
+import { KeyboardShortcutsTriggerComponent } from '../keyboard-shortcuts/keyboard-shortcuts-trigger.component';
+import { provideKeyboardShortcuts } from '../keyboard-shortcuts/keyboard-shortcuts.providers';
 import { MinimapPanelComponent } from '../minimap-panel/minimap-panel.component';
 import { NodeMutationService } from '../properties-sidebar/node-mutation.service';
 import { PropertiesSidebarComponent } from '../properties-sidebar/properties-sidebar.component';
@@ -35,6 +40,8 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     ToolbarHorizontalComponent,
     ViewportBoundsDirective,
     ViewportOverlayDirective,
+    KeyboardShortcutsTriggerComponent,
+    KeyboardShortcutsDialogComponent,
   ],
   templateUrl: './org-chart-page.component.html',
   styleUrl: './org-chart-page.component.scss',
@@ -43,6 +50,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     '(focusin)': 'onPageFocusIn($event)',
     '(focusout)': 'onPageFocusOut($event)',
   },
+  hostDirectives: [KeyboardShortcutsHotkeyDirective],
   providers: [
     provideNgDiagram(),
     // To customize org-chart settings, uncomment and modify:
@@ -64,6 +72,8 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     NodeFocusService,
     DiagramFocusService,
     DiagramKeyboardController,
+    ...provideKeyboardShortcuts(),
+    provideDiagramModalFocusRestore(),
   ],
 })
 export class OrgChartPageComponent {

@@ -1,6 +1,6 @@
 import { resolveNodeAction } from './node-actions';
 
-const NODE_HOST_SELECTOR = '[data-org-node-id]';
+export const NODE_HOST_SELECTOR = '[data-org-node-id]';
 
 export interface NodeFocusContext {
   readonly nodeId: string;
