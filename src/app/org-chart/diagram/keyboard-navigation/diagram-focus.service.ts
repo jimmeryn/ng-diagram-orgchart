@@ -2,7 +2,13 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
 import { LayoutService } from '../layout/layout.service';
 import { NodeVisibilityService } from '../node-visibility/node-visibility.service';
-import { isInsideDiagram, resolveDiagramFocus, retainsRememberedNode } from './diagram-focus-level';
+import {
+  isInsideDiagram,
+  NODE_HOST_SELECTOR,
+  resolveDiagramFocus,
+  retainsRememberedNode,
+  type DiagramFocus,
+} from './diagram-focus-level';
 import { KeyboardNavigationService } from './keyboard-navigation.service';
 import { NodeFocusService } from './node-focus.service';
 
@@ -23,6 +29,7 @@ export class DiagramFocusService {
   private readonly lastFocusedNodeId = signal<string | null>(null);
   private readonly nodeWithFocus = signal<string | null>(null);
   private fallbackTarget: HTMLElement | null = null;
+  private lastInputWasPointer = false;
 
   /** The node that currently contains focus — its host or one of its action buttons. */
   readonly nodeWithFocusId = this.nodeWithFocus.asReadonly();
@@ -49,9 +56,32 @@ export class DiagramFocusService {
    */
   handlePageFocusIn(target: EventTarget | null): void {
     const focus = resolveDiagramFocus(target);
-    this.nodeWithFocus.set(focus.level === 'surface' ? null : focus.nodeId);
+    this.nodeWithFocus.set(this.resolveContainment(focus));
     if (retainsRememberedNode(target)) return;
     this.lastFocusedNodeId.set(null);
+  }
+
+  handlePagePointerDown(target: EventTarget | null): void {
+    this.lastInputWasPointer = true;
+    if (resolveDiagramFocus(target).level !== 'surface') return;
+    this.releaseFocusedNode();
+  }
+
+  /** The node keeps the focus after a key press, so `Enter` can reach its buttons. */
+  handlePageKeyDown(target: EventTarget | null): void {
+    this.lastInputWasPointer = false;
+    const focus = resolveDiagramFocus(target);
+    if (focus.level === 'surface') return;
+    this.nodeWithFocus.set(focus.nodeId);
+  }
+
+  /** ng-diagram prevents the default blur on a press on the canvas. Blur the node host. */
+  private releaseFocusedNode(): void {
+    this.nodeWithFocus.set(null);
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement && focused.closest(NODE_HOST_SELECTOR)) {
+      focused.blur();
+    }
   }
 
   /** Clears the focus-containment state when focus is lost to the document body. */
@@ -62,6 +92,17 @@ export class DiagramFocusService {
       if (document.activeElement !== document.body) return;
       this.nodeWithFocus.set(null);
     });
+  }
+
+  /**
+   * Focus on a button always counts. The buttons must stay in the DOM while they have the
+   * focus. Focus on the host counts only after keyboard input, because a pointer press
+   * gives the host the focus and no later event removes it.
+   */
+  private resolveContainment(focus: DiagramFocus): string | null {
+    if (focus.level === 'surface') return null;
+    if (focus.level === 'node' && this.lastInputWasPointer) return null;
+    return focus.nodeId;
   }
 
   setFallbackTarget(element: HTMLElement | null): void {

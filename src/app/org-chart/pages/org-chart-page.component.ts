@@ -12,6 +12,7 @@ import { SortOrderService } from '../diagram/model/sort-order.service';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/diagram-focus.service';
 import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
 import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/diagram-modal-focus-restore';
+import { trackFocusInputModality } from '../diagram/keyboard-navigation/focus-input-modality';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
 import { ConfirmDeleteDialogComponent } from '../diagram/node-deletion/confirm-delete-dialog.component';
@@ -82,6 +83,10 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
 })
 export class OrgChartPageComponent {
   private readonly diagramFocus = inject(DiagramFocusService);
+
+  constructor() {
+    trackFocusInputModality();
+  }
 
   onSkipToDiagram(event: Event): void {
     event.preventDefault();
