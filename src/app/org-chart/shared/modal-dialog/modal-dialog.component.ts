@@ -12,20 +12,12 @@ import {
 } from '@angular/core';
 import { MODAL_FOCUS_RESTORE } from './modal-focus-restore';
 
-let nextId = 0;
-
 /**
- * `showModal()` gives the dialog role, the modal semantics and a focus trap. Do not add these
- * again.
+ * `showModal()` gives the role, the modal semantics and the focus trap. Do not add them again.
  *
- * The parent component must react to `closed`. If it does not react, its `open` value and the
- * state of the dialog become different after the first Escape key or backdrop click.
+ * The parent must react to `closed`, or `open` and the dialog disagree after the first Escape.
  *
- * Do not put the content in an `@if` block. A closed `<dialog>` has `display: none` from the
- * browser stylesheet, and it is not in the accessibility tree.
- *
- * The listener for `close` is on the `<dialog>` element, because that event does not go up the
- * DOM tree.
+ * Do not put the content in an `@if` block. The `viewChild` signals must stay stable.
  */
 @Component({
   selector: 'app-modal-dialog',
@@ -41,25 +33,28 @@ let nextId = 0;
 export class ModalDialogComponent {
   private readonly document = inject(DOCUMENT);
   private readonly focusRestore = inject(MODAL_FOCUS_RESTORE, { optional: true });
-  private readonly uid = nextId++;
 
   readonly open = input.required<boolean>();
   readonly heading = input.required<string>();
-  readonly describedBy = input<string | null>(null);
-  /**
-   * The element that gets the focus when the dialog closes. The default is the element that has
-   * the focus when the dialog opens.
-   *
-   * Always give the trigger element, because Safari does not put the focus on a `<button>` after
-   * a click.
-   */
+  /** Makes the content the description of the dialog. A closed dialog keeps its id, so the
+   * value must be unique on the page. */
+  readonly contentId = input<string | null>(null);
+  /** Makes the content a tab stop, so that a keyboard user can scroll it. */
+  readonly scrollableContent = input(true);
+  /** The default is the element with the focus at open time. Safari does not focus a clicked
+   * `<button>`, so give the trigger. */
   readonly opener = input<HTMLElement | null>(null);
+  /** Not named `role`: a static `role="..."` lands on the `display: contents` host. */
+  readonly dialogRole = input<'dialog' | 'alertdialog' | undefined>(undefined);
+  /** The default is the heading. */
+  readonly initialFocus = input<HTMLElement | null>(null);
+  /** Read at close time. Give it if the action removes the element that had the focus. */
+  readonly returnFocusTo = input<HTMLElement | null>(null);
+  readonly dismissOnBackdrop = input(true);
   readonly closed = output<void>();
 
   private readonly dialogEl = viewChild.required<ElementRef<HTMLDialogElement>>('dialogEl');
   private readonly headingEl = viewChild.required<ElementRef<HTMLElement>>('headingEl');
-
-  protected readonly headingId = `modal-dialog-${this.uid}-heading`;
 
   private restoreTarget: HTMLElement | null = null;
 
@@ -72,7 +67,8 @@ export class ModalDialogComponent {
           untracked(this.opener) ?? (this.document.activeElement as HTMLElement | null);
         this.restoreTarget = this.focusRestore?.normalize(captured) ?? captured;
         el.showModal();
-        this.headingEl().nativeElement.focus({ preventScroll: true });
+        const focusTarget = untracked(this.initialFocus) ?? this.headingEl().nativeElement;
+        focusTarget.focus({ preventScroll: true });
       } else if (el.open) {
         el.close();
       }
@@ -80,7 +76,7 @@ export class ModalDialogComponent {
   }
 
   protected onClose(): void {
-    const target = this.restoreTarget;
+    const target = untracked(this.returnFocusTo) ?? this.restoreTarget;
     this.restoreTarget = null;
     if (target?.isConnected) {
       target.focus({ preventScroll: true });
@@ -95,6 +91,7 @@ export class ModalDialogComponent {
   }
 
   protected onBackdropClick(event: MouseEvent): void {
+    if (!this.dismissOnBackdrop()) return;
     if (event.target === this.dialogEl().nativeElement && event.detail !== 0) {
       this.dialogEl().nativeElement.close();
     }

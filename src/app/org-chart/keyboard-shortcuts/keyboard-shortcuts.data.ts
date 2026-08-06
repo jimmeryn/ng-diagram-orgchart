@@ -35,7 +35,10 @@ export const SHORTCUTS: readonly ShortcutRow[] = [
   { combos: [['Space']], action: 'Expand or collapse node' },
   { combos: [[MOD, 'Enter']], action: 'Open properties panel' },
   { combos: [['arrow keys']], action: 'Move selected node, or pan the chart' },
-  { combos: [['Delete'], ['Backspace']], action: 'Delete node' },
+  {
+    combos: [['Delete'], ['Backspace']],
+    action: 'Delete node that has focus, after a confirmation',
+  },
   { combos: [[MOD, 'A']], action: 'Select all nodes' },
   { combos: [[MOD, 'C']], action: 'Copy node' },
   { combos: [[MOD, 'X']], action: 'Cut node' },

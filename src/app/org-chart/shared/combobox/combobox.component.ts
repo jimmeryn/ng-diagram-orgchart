@@ -23,8 +23,6 @@ import {
   ComboboxPrefixDef,
 } from './combobox-option.directive';
 
-let nextId = 0;
-
 const FILTER_DEBOUNCE_MS = 150;
 
 /** A selectable option exposed to consumers of the combobox. */
@@ -55,11 +53,11 @@ type ComboboxItem<T> =
 export class ComboboxComponent<T = unknown> implements FormValueControl<T | null> {
   private readonly elRef = inject(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly uid = nextId++;
 
   options = input.required<ComboboxOption<T>[]>();
   placeholder = input('Select...');
-  triggerId = input<string>();
+  /** Id of the trigger. The listbox and the option ids come from it. */
+  triggerId = input.required<string>();
 
   protected readonly optionTpl = contentChild(ComboboxOptionDef);
   protected readonly nullOptionTpl = contentChild(ComboboxNullOptionDef);
@@ -77,7 +75,7 @@ export class ComboboxComponent<T = unknown> implements FormValueControl<T | null
   private blurTimer: ReturnType<typeof setTimeout> | null = null;
   private removeDocumentClick: (() => void) | null = null;
 
-  protected readonly listboxId = computed(() => this.triggerId() ?? `cb-${this.uid}`);
+  protected readonly listboxId = this.triggerId;
 
   protected readonly allOptions = computed<ComboboxItem<T>[]>(() => [
     { type: 'null', value: null },

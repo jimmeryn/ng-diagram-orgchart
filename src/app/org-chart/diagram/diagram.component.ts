@@ -78,6 +78,7 @@ export class DiagramComponent {
     effect(() => {
       const element = this.diagramMain()?.nativeElement ?? null;
       this.sidebarService.setFallbackFocusTarget(element);
+      this.diagramFocus.setFallbackTarget(element);
     });
   }
 

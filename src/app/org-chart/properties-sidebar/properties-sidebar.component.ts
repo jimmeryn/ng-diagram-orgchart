@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { NodeDeletionService } from '../diagram/node-deletion/node-deletion.service';
 import { SidebarFormComponent } from './components/sidebar-form/sidebar-form.component';
 import {
   ON_FIELD_CHANGE,
@@ -33,7 +34,7 @@ import { PropertiesSidebarService } from './properties-sidebar.service';
 })
 export class PropertiesSidebarComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
-  private readonly nodeMutationService = inject(NodeMutationService);
+  private readonly nodeDeletion = inject(NodeDeletionService);
 
   protected readonly isExpanded = this.sidebarService.isExpanded;
   protected readonly state = this.sidebarService.sidebarState;
@@ -53,10 +54,9 @@ export class PropertiesSidebarComponent {
     }
   }
 
-  protected onRemoveNode(): void {
+  protected onRemoveNode(opener: HTMLElement): void {
     const nodeId = this.sidebarService.selectedNode()?.id;
-    if (nodeId) {
-      this.nodeMutationService.removeNode(nodeId);
-    }
+    if (!nodeId) return;
+    this.nodeDeletion.requestDelete(nodeId, opener);
   }
 }

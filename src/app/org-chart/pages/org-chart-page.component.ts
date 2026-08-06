@@ -14,6 +14,8 @@ import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagra
 import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/diagram-modal-focus-restore';
 import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
+import { ConfirmDeleteDialogComponent } from '../diagram/node-deletion/confirm-delete-dialog.component';
+import { provideNodeDeletion } from '../diagram/node-deletion/node-deletion.providers';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from '../diagram/node-visibility/node-visibility.service';
 import { ViewportBoundsDirective } from '../diagram/node-visibility/viewport-bounds.directive';
@@ -42,6 +44,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     ViewportOverlayDirective,
     KeyboardShortcutsTriggerComponent,
     KeyboardShortcutsDialogComponent,
+    ConfirmDeleteDialogComponent,
   ],
   templateUrl: './org-chart-page.component.html',
   styleUrl: './org-chart-page.component.scss',
@@ -73,6 +76,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     DiagramFocusService,
     DiagramKeyboardController,
     ...provideKeyboardShortcuts(),
+    ...provideNodeDeletion(),
     provideDiagramModalFocusRestore(),
   ],
 })

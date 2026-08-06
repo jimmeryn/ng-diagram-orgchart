@@ -22,6 +22,7 @@ export class DiagramFocusService {
 
   private readonly lastFocusedNodeId = signal<string | null>(null);
   private readonly nodeWithFocus = signal<string | null>(null);
+  private fallbackTarget: HTMLElement | null = null;
 
   /** The node that currently contains focus — its host or one of its action buttons. */
   readonly nodeWithFocusId = this.nodeWithFocus.asReadonly();
@@ -63,9 +64,21 @@ export class DiagramFocusService {
     });
   }
 
+  setFallbackTarget(element: HTMLElement | null): void {
+    this.fallbackTarget = element;
+  }
+
+  get diagramSurface(): HTMLElement | null {
+    return this.fallbackTarget;
+  }
+
+  /** With no node to focus, the focus goes to the diagram and not to `document.body`. */
   focusEntryNode(): void {
     const nodeId = this.entryNodeId();
-    if (!nodeId) return;
+    if (!nodeId) {
+      this.fallbackTarget?.focus({ preventScroll: true });
+      return;
+    }
     this.nodeVisibility.ensureVisible(nodeId);
     this.nodeFocus.focus(nodeId);
   }
