@@ -1,16 +1,16 @@
 import { inject, Injectable } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
-import { getIsHidden } from '../model/data-getters';
-import { HierarchyService } from '../model/hierarchy.service';
-import { SortOrderService } from '../model/sort-order.service';
+import { getIsHidden } from '../../model/data-getters';
+import { HierarchyService } from '../../model/hierarchy.service';
+import { SortOrderService } from '../../model/sort-order.service';
 import { getArrowStrategy, type ArrowKey } from './arrow-keys';
 
 /**
- * Translates arrow keys into navigation targets based on layout orientation.
- * Skips nodes hidden by a collapsed ancestor.
+ * Owns what "next node" means: the depth-first tab order, and the target an arrow key points at
+ * for the current layout orientation. Skips nodes hidden by a collapsed ancestor.
  */
 @Injectable()
-export class KeyboardNavigationService {
+export class NavigationOrderService {
   private readonly modelService = inject(NgDiagramModelService);
   private readonly hierarchyService = inject(HierarchyService);
   private readonly sortOrderService = inject(SortOrderService);

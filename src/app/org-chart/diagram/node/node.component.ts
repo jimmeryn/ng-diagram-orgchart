@@ -18,10 +18,12 @@ import {
   type Node,
 } from 'ng-diagram';
 import { DragReorderService } from '../../drag-reorder/drag-reorder.service';
+import { visibleDropSides } from '../../drag-reorder/visible-drop-sides';
+import { MoveModeService } from '../../keyboard-move';
 import { ORG_CHART_CONFIG } from '../../org-chart.config';
-import { DiagramFocusService } from '../keyboard-navigation/diagram-focus.service';
-import { NodeFocusService } from '../keyboard-navigation/node-focus.service';
-import { focusFirstNodeAction } from '../keyboard-navigation/node-actions';
+import { DiagramFocusService } from '../keyboard-navigation/focus/diagram-focus.service';
+import { focusFirstNodeAction } from '../keyboard-navigation/focus/node-actions';
+import { NodeFocusService } from '../keyboard-navigation/focus/node-focus.service';
 import { LayoutService } from '../layout/layout.service';
 import { getHasChildren, getIsCollapsed, getIsHidden } from '../model/data-getters';
 import { isOccupiedNodeData, isVacantNode } from '../model/guards';
@@ -29,6 +31,11 @@ import { getColorForRole, type OrgChartNodeData } from '../model/interfaces';
 import { AddButtonComponent } from './components/add-button/add-button.component';
 import { CompactNodeComponent } from './components/compact-node/compact-node.component';
 import { DropIndicatorComponent } from './components/drop-indicator/drop-indicator.component';
+import {
+  buildIndicatorStates,
+  indicatorStatesEqual,
+  type IndicatorStates,
+} from './components/drop-indicator/indicator-states';
 import { FullNodeComponent } from './components/full-node/full-node.component';
 import { ToggleExpandButtonComponent } from './components/toggle-expand-button/toggle-expand-button.component';
 import { VacantNodeComponent } from './components/vacant-node/vacant-node.component';
@@ -82,6 +89,7 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   private readonly viewportService = inject(NgDiagramViewportService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly dragReorderService = inject(DragReorderService);
+  private readonly moveMode = inject(MoveModeService);
   private readonly nodeFocusService = inject(NodeFocusService);
   private readonly diagramFocus = inject(DiagramFocusService);
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -127,10 +135,31 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   });
 
   protected hasChildren = computed(() => !!getHasChildren(this.node()));
-  protected isInDropRange = computed(
-    () =>
-      this.dragReorderService.isReorderActive() &&
-      this.dragReorderService.isNodeInDropRange(this.nodeId()),
+
+  /**
+   * The three drop bars, fed by whichever reorder is running. Move mode wins when both could
+   * claim the node, and they are mutually exclusive anyway — a pointer drag cancels the mode.
+   */
+  protected readonly indicators = computed<IndicatorStates | null>(
+    () => {
+      const id = this.nodeId();
+
+      if (this.moveMode.isActive()) {
+        const own = this.moveMode.handles().filter((handle) => handle.nodeId === id);
+        if (own.length === 0) return null;
+        const current = own.find((handle) => handle.current)?.side ?? null;
+        return buildIndicatorStates(new Set(own.map((handle) => handle.side)), current);
+      }
+
+      if (!this.dragReorderService.isReorderActive()) return null;
+      if (!this.dragReorderService.isNodeInDropRange(id)) return null;
+
+      const visible = new Set(visibleDropSides(this.dragReorderService.hiddenSidesFor(id)));
+      const highlighted = this.dragReorderService.highlightedIndicator();
+
+      return buildIndicatorStates(visible, highlighted?.nodeId === id ? highlighted.side : null);
+    },
+    { equal: indicatorStatesEqual },
   );
 
   protected isRoot = computed(() => {
@@ -143,9 +172,20 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   protected readonly containsFocus = computed(
     () => this.diagramFocus.nodeWithFocusId() === this.nodeId(),
   );
+  private readonly actionsAllowed = computed(
+    () => !this.dragReorderService.isReorderActive() && !this.moveMode.isActive(),
+  );
+
   protected showAddButtons = computed(
-    () =>
-      (this.isNodeHovered() || this.containsFocus()) && !this.dragReorderService.isReorderActive(),
+    () => (this.isNodeHovered() || this.containsFocus()) && this.actionsAllowed(),
+  );
+
+  /**
+   * Keyboard only, and never on a root. A pointer user drags the card, so the button is not needed
+   * on hover. `containsFocus` is already false after a pointer press on the card.
+   */
+  protected showMoveButton = computed(
+    () => this.containsFocus() && !this.isRoot() && this.actionsAllowed(),
   );
 
   protected readonly ariaExpanded = computed<boolean | null>(() => {

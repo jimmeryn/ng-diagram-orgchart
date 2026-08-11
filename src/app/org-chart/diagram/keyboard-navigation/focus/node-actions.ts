@@ -1,9 +1,15 @@
-import type { AddNodeAction } from '../model/add-node.service';
+import type { AddNodeAction } from '../../model/add-node.service';
 
 /** The node's own action buttons, in the order keyboard focus visits them. */
-const NODE_ACTION_ORDER = ['child', 'siblingBefore', 'siblingAfter', 'toggleExpand'] as const;
+const NODE_ACTION_ORDER = [
+  'child',
+  'siblingBefore',
+  'siblingAfter',
+  'move',
+  'toggleExpand',
+] as const;
 
-export type NodeActionName = AddNodeAction | 'toggleExpand';
+export type NodeActionName = AddNodeAction | 'move' | 'toggleExpand';
 
 const NODE_ACTION_SELECTOR = '[data-node-action]';
 

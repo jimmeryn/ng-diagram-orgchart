@@ -2,7 +2,7 @@ import { DestroyRef, inject } from '@angular/core';
 import { DiagramFocusService } from './diagram-focus.service';
 
 /**
- * ng-diagram stops a pointer press at its host, and the diagram keyboard controller stops
+ * ng-diagram stops a pointer press at its host, and the diagram keyboard service stops
  * the keys that it handles. Listen in the capture phase to receive these events.
  */
 export function trackFocusInputModality(): void {

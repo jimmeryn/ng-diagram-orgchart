@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { DiagramFocusService } from '../keyboard-navigation/diagram-focus.service';
-import { NodeFocusService } from '../keyboard-navigation/node-focus.service';
+import { DiagramFocusService } from '../keyboard-navigation/focus/diagram-focus.service';
+import { NodeFocusService } from '../keyboard-navigation/focus/node-focus.service';
 import { HierarchyService } from '../model/hierarchy.service';
 import { SortOrderService } from '../model/sort-order.service';
 import { NodeVisibilityService } from '../node-visibility/node-visibility.service';

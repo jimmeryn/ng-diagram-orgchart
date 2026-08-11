@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
-import { LayoutService } from '../layout/layout.service';
-import { NodeVisibilityService } from '../node-visibility/node-visibility.service';
+import { LayoutService } from '../../layout/layout.service';
+import { NodeVisibilityService } from '../../node-visibility/node-visibility.service';
 import {
   isInsideDiagram,
   NODE_HOST_SELECTOR,
@@ -9,7 +9,7 @@ import {
   retainsRememberedNode,
   type DiagramFocus,
 } from './diagram-focus-level';
-import { KeyboardNavigationService } from './keyboard-navigation.service';
+import { NavigationOrderService } from '../order/navigation-order.service';
 import { NodeFocusService } from './node-focus.service';
 
 /**
@@ -20,7 +20,7 @@ import { NodeFocusService } from './node-focus.service';
  */
 @Injectable()
 export class DiagramFocusService {
-  private readonly navigation = inject(KeyboardNavigationService);
+  private readonly navigation = inject(NavigationOrderService);
   private readonly layoutService = inject(LayoutService);
   private readonly nodeVisibility = inject(NodeVisibilityService);
   private readonly nodeFocus = inject(NodeFocusService);

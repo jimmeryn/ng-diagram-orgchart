@@ -34,7 +34,11 @@ export const SHORTCUTS: readonly ShortcutRow[] = [
   { combos: [['Escape']], action: 'Leave node buttons, or clear the selection' },
   { combos: [['Space']], action: 'Expand or collapse node' },
   { combos: [[MOD, 'Enter']], action: 'Open properties panel' },
-  { combos: [['arrow keys']], action: 'Move selected node, or pan the chart' },
+  {
+    combos: [['arrow keys']],
+    action:
+      'Move selected node, or pan the chart. While moving a colleague, go to a nearby colleague or position',
+  },
   {
     combos: [['Delete'], ['Backspace']],
     action: 'Delete node that has focus, after a confirmation',
@@ -45,5 +49,20 @@ export const SHORTCUTS: readonly ShortcutRow[] = [
   { combos: [[MOD, 'V']], action: 'Paste node' },
   { combos: [['=']], action: 'Zoom in' },
   { combos: [['-']], action: 'Zoom out' },
-  { combos: [[KEYBOARD_SHORTCUTS_HOTKEY]], action: 'Show keyboard shortcuts' },
+  {
+    combos: [[KEYBOARD_SHORTCUTS_HOTKEY]],
+    action: 'Show keyboard shortcuts, except while moving a colleague',
+  },
+  {
+    combos: [['Tab'], ['Shift', 'Tab']],
+    action: 'While moving a colleague: step through the colleagues, then through their positions',
+  },
+  {
+    combos: [['Enter']],
+    action: 'While moving a colleague: choose the colleague, then confirm the position',
+  },
+  {
+    combos: [['Escape']],
+    action: 'While moving a colleague: go back to choosing a colleague, then leave the move',
+  },
 ];

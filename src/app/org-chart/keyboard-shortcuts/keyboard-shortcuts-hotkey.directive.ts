@@ -1,6 +1,6 @@
 import { Directive, inject } from '@angular/core';
 import { isTextEntryTarget } from '../shared/text-entry';
-import { KEYBOARD_SHORTCUTS_HOTKEY } from './keyboard-shortcuts.data';
+import { KEYBOARD_SHORTCUTS_HOTKEY } from './keyboard-shortcuts';
 import { KeyboardShortcutsService } from './keyboard-shortcuts.service';
 
 /** An event that starts inside a dialog also goes up the DOM tree to the document. */

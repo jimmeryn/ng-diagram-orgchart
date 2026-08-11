@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ModalDialogComponent } from '../shared/modal-dialog/modal-dialog.component';
-import { KEYBOARD_SHORTCUTS_TITLE, SHORTCUTS, spokenKey } from './keyboard-shortcuts.data';
+import { KEYBOARD_SHORTCUTS_TITLE, SHORTCUTS, spokenKey } from './keyboard-shortcuts';
 import { KeyboardShortcutsService } from './keyboard-shortcuts.service';
 
 /**

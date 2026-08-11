@@ -9,12 +9,11 @@ import { ExpandCollapseService } from '../diagram/model/expand-collapse.service'
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
-import { DiagramFocusService } from '../diagram/keyboard-navigation/diagram-focus.service';
-import { DiagramKeyboardController } from '../diagram/keyboard-navigation/diagram-keyboard.controller';
-import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/diagram-modal-focus-restore';
-import { trackFocusInputModality } from '../diagram/keyboard-navigation/focus-input-modality';
-import { KeyboardNavigationService } from '../diagram/keyboard-navigation/keyboard-navigation.service';
-import { NodeFocusService } from '../diagram/keyboard-navigation/node-focus.service';
+import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagram-focus.service';
+import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/focus/diagram-modal-focus-restore';
+import { trackFocusInputModality } from '../diagram/keyboard-navigation/focus/focus-input-modality';
+import { NavigationOrderService } from '../diagram/keyboard-navigation/order/navigation-order.service';
+import { NodeFocusService } from '../diagram/keyboard-navigation/focus/node-focus.service';
 import { ConfirmDeleteDialogComponent } from '../diagram/node-deletion/confirm-delete-dialog.component';
 import { provideNodeDeletion } from '../diagram/node-deletion/node-deletion.providers';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
@@ -72,10 +71,9 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     LayoutAnimationService,
     NodeVisibilityService,
     NodeVisibilityConfigService,
-    KeyboardNavigationService,
+    NavigationOrderService,
     NodeFocusService,
     DiagramFocusService,
-    DiagramKeyboardController,
     ...provideKeyboardShortcuts(),
     ...provideNodeDeletion(),
     provideDiagramModalFocusRestore(),

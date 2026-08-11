@@ -7,7 +7,7 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { KEYBOARD_SHORTCUTS_HOTKEY, KEYBOARD_SHORTCUTS_TITLE } from './keyboard-shortcuts.data';
+import { KEYBOARD_SHORTCUTS_HOTKEY, KEYBOARD_SHORTCUTS_TITLE } from './keyboard-shortcuts';
 import { KeyboardShortcutsService } from './keyboard-shortcuts.service';
 
 export type KeyboardShortcutsTriggerVariant = 'icon' | 'link';

@@ -22,12 +22,13 @@ import {
 import { DragReorderService } from '../drag-reorder/drag-reorder.service';
 import { DragService } from '../drag-reorder/drag.service';
 import { DropService } from '../drag-reorder/drop.service';
+import { MoveModeStatusComponent, provideKeyboardMove } from '../keyboard-move';
 import { ORG_CHART_CONFIG } from '../org-chart.config';
 import { PropertiesSidebarService } from '../properties-sidebar/properties-sidebar.service';
 import { diagramModel } from './data';
 import { EdgeComponent } from './edge.component';
-import { DiagramFocusService } from './keyboard-navigation/diagram-focus.service';
-import { DiagramKeyboardController } from './keyboard-navigation/diagram-keyboard.controller';
+import { DiagramFocusService } from './keyboard-navigation/focus/diagram-focus.service';
+import { DiagramKeyboardService } from './keyboard-navigation/routing/diagram-keyboard.service';
 import { LayoutGate } from './layout/layout-gate';
 import { LayoutService, type LayoutDirection } from './layout/layout.service';
 import { isOrgChartNode } from './model/guards';
@@ -51,11 +52,22 @@ import { SuppressLibraryTabStopsDirective } from './suppress-library-tab-stops.d
  */
 @Component({
   selector: 'app-diagram',
-  imports: [NgDiagramComponent, NgDiagramBackgroundComponent, SuppressLibraryTabStopsDirective],
+  imports: [
+    NgDiagramComponent,
+    NgDiagramBackgroundComponent,
+    SuppressLibraryTabStopsDirective,
+    MoveModeStatusComponent,
+  ],
   templateUrl: './diagram.component.html',
   styleUrl: './diagram.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [DragService, DropService, DragReorderService],
+  providers: [
+    DragService,
+    DropService,
+    DragReorderService,
+    DiagramKeyboardService,
+    ...provideKeyboardMove(),
+  ],
 })
 export class DiagramComponent {
   private readonly orgChartConfig = inject(ORG_CHART_CONFIG);
@@ -69,7 +81,7 @@ export class DiagramComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
-  private readonly keyboardController = inject(DiagramKeyboardController);
+  private readonly keyboardService = inject(DiagramKeyboardService);
   private readonly diagramFocus = inject(DiagramFocusService);
 
   private readonly diagramMain = viewChild('diagramMain', { read: ElementRef<HTMLElement> });
@@ -155,7 +167,7 @@ export class DiagramComponent {
   }
 
   onDiagramKeydown(event: KeyboardEvent): void {
-    this.keyboardController.handle(event);
+    this.keyboardService.handle(event);
   }
 
   /** Fits all nodes in view, accounting for overlay insets plus extra padding. */

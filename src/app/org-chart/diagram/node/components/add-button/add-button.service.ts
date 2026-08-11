@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { NgDiagramSelectionService } from 'ng-diagram';
-import { findNodeHost } from '../../../keyboard-navigation/diagram-focus-level';
+import { findNodeHost } from '../../../keyboard-navigation/focus/diagram-focus-level';
 import { AddNodeService, type AddNodeAction } from '../../../model/add-node.service';
 import { NodeVisibilityService } from '../../../node-visibility/node-visibility.service';
 import { PropertiesSidebarService } from '../../../../properties-sidebar/properties-sidebar.service';

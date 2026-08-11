@@ -2,7 +2,7 @@ import { inject, type Provider } from '@angular/core';
 import {
   MODAL_FOCUS_RESTORE,
   type ModalFocusRestore,
-} from '../../shared/modal-dialog/modal-focus-restore';
+} from '../../../shared/modal-dialog/modal-focus-restore';
 import { NODE_HOST_SELECTOR } from './diagram-focus-level';
 import { DiagramFocusService } from './diagram-focus.service';
 
