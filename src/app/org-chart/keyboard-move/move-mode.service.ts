@@ -17,7 +17,6 @@ import type { ArrowKey } from '../diagram/keyboard-navigation/order/arrow-keys';
 import { LayoutGate } from '../diagram/layout/layout-gate';
 import { LayoutService } from '../diagram/layout/layout.service';
 import { HierarchyService } from '../diagram/model/hierarchy.service';
-import { NodeVisibilityService } from '../diagram/node-visibility/node-visibility.service';
 import { MoveCandidatesService } from './candidates/move-candidates.service';
 import { MoveMessageFactory } from './messages/move-message.factory';
 import {
@@ -73,7 +72,6 @@ export class MoveModeService implements OnDestroy {
   private readonly layoutGate = inject(LayoutGate);
   private readonly layoutService = inject(LayoutService);
   private readonly hierarchyService = inject(HierarchyService);
-  private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly resultVisibleMs = inject(MOVE_RESULT_VISIBLE_MS);
 
@@ -296,7 +294,6 @@ export class MoveModeService implements OnDestroy {
     const nodeId = candidates.nodeIds[nodeIndex];
     this.clearResultTimer();
     this.expectedFocusId = nodeId;
-    this.nodeVisibilityService.ensureVisible(nodeId);
     this.diagramFocusService.focusNode(nodeId);
     this.status.set(this.nodePicked(movingId, nodeId));
   }

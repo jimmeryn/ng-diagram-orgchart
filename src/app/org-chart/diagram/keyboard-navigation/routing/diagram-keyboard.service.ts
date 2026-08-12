@@ -24,6 +24,7 @@ import {
 } from './key-events';
 import { NavigationOrderService } from '../order/navigation-order.service';
 import { getNodeActions } from '../focus/node-actions';
+import { DiagramFocusService } from '../focus/diagram-focus.service';
 import { NodeFocusService } from '../focus/node-focus.service';
 
 /**
@@ -41,6 +42,7 @@ export class DiagramKeyboardService {
   private readonly navigationService = inject(NavigationOrderService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeFocusService = inject(NodeFocusService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly expandCollapseService = inject(ExpandCollapseService);
   private readonly modelApplyService = inject(ModelApplyService);
@@ -125,8 +127,7 @@ export class DiagramKeyboardService {
     );
     if (!targetId) return;
     event.preventDefault();
-    this.nodeVisibilityService.ensureVisible(targetId);
-    this.nodeFocusService.focus(targetId);
+    this.diagramFocusService.focusNode(targetId);
   }
 
   private moveFocusInDirection(event: KeyboardEvent, focus: NodeFocusContext): void {
@@ -137,8 +138,7 @@ export class DiagramKeyboardService {
       this.layoutService.isHorizontal(),
     );
     if (!targetId) return;
-    this.nodeVisibilityService.ensureVisible(targetId);
-    this.nodeFocusService.focus(targetId);
+    this.diagramFocusService.focusNode(targetId);
   }
 
   private selectAndDescend(event: KeyboardEvent, focus: FocusedNode): void {

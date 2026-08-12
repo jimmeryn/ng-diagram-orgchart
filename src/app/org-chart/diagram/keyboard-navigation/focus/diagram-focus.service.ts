@@ -75,9 +75,13 @@ export class DiagramFocusService {
     this.nodeWithFocus.set(focus.nodeId);
   }
 
-  /** Focuses a node on the app's behalf. Not a pointer press, so the node keeps the focus. */
+  /**
+   * Brings a node into view and focuses it on the app's behalf. Not a pointer press, so the node
+   * counts as containing the focus.
+   */
   focusNode(nodeId: string): void {
     this.lastInputWasPointer = false;
+    this.nodeVisibilityService.ensureVisible(nodeId);
     this.nodeFocusService.focus(nodeId);
   }
 
@@ -126,7 +130,6 @@ export class DiagramFocusService {
       this.fallbackTarget?.focus({ preventScroll: true });
       return;
     }
-    this.nodeVisibilityService.ensureVisible(nodeId);
     this.focusNode(nodeId);
   }
 
