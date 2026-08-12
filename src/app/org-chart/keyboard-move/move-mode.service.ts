@@ -175,11 +175,12 @@ export class MoveModeService implements OnDestroy {
     }
 
     const from = state.candidates.nodeIds[state.nodeIndex];
-    const targetId = this.navigationService.getNextNodeId(from, key);
+    const targetId = this.navigationService.getNextNodeId(from, key, (nodeId) =>
+      state.candidates.byNodeId.has(nodeId),
+    );
     if (!targetId) return;
 
     const nodeIndex = state.candidates.nodeIds.indexOf(targetId);
-    if (nodeIndex < 0) return;
     this.state.set({ ...state, nodeIndex });
     this.goToNode(state.movingId, state.candidates, nodeIndex);
   }

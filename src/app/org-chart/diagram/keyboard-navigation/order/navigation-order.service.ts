@@ -6,6 +6,8 @@ import { HierarchyService } from '../../model/hierarchy.service';
 import { SortOrderService } from '../../model/sort-order.service';
 import { getArrowStrategy, type ArrowKey } from './arrow-keys';
 
+type AcceptNode = (nodeId: string) => boolean;
+
 /**
  * Owns what "next node" means: the depth-first tab order, and the target an arrow key points at
  * for the current layout orientation. Skips nodes hidden by a collapsed ancestor.
@@ -47,18 +49,22 @@ export class NavigationOrderService {
     return this.visibleTreeOrder()[position + step] ?? null;
   }
 
-  getNextNodeId(currentId: string, arrowKey: ArrowKey): string | null {
+  getNextNodeId(
+    currentId: string,
+    arrowKey: ArrowKey,
+    accept: AcceptNode = () => true,
+  ): string | null {
     const direction = getArrowStrategy(this.layoutService.isHorizontal()).toDirection(arrowKey);
     if (!direction) return null;
     switch (direction) {
       case 'parent':
-        return this.findVisibleParent(currentId);
+        return this.findVisibleParent(currentId, accept);
       case 'firstChild':
-        return this.findFirstVisibleChild(currentId);
+        return this.findFirstVisibleChild(currentId, accept);
       case 'prevSibling':
-        return this.findSibling(currentId, -1);
+        return this.findSibling(currentId, -1, accept);
       case 'nextSibling':
-        return this.findSibling(currentId, 1);
+        return this.findSibling(currentId, 1, accept);
     }
   }
 
@@ -83,24 +89,24 @@ export class NavigationOrderService {
     return order;
   }
 
-  private findVisibleParent(currentId: string): string | null {
+  private findVisibleParent(currentId: string, accept: AcceptNode): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
     if (!parentId) return null;
     const parent = this.modelService.getNodeById(parentId);
     if (!parent || getIsHidden(parent)) return null;
-    return parentId;
+    return accept(parentId) ? parentId : null;
   }
 
-  private findFirstVisibleChild(currentId: string): string | null {
+  private findFirstVisibleChild(currentId: string, accept: AcceptNode): string | null {
     const children = this.sortOrderService.getSortedChildren(currentId);
     for (const child of children) {
       const node = this.modelService.getNodeById(child.id);
-      if (node && !getIsHidden(node)) return child.id;
+      if (node && !getIsHidden(node) && accept(child.id)) return child.id;
     }
     return null;
   }
 
-  private findSibling(currentId: string, step: number): string | null {
+  private findSibling(currentId: string, step: number, accept: AcceptNode): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
 
     const siblingIds = parentId
@@ -115,9 +121,10 @@ export class NavigationOrderService {
     const idx = visible.indexOf(currentId);
     if (idx < 0) return null;
 
-    const targetIdx = idx + step;
-    if (targetIdx < 0 || targetIdx >= visible.length) return null;
-    return visible[targetIdx];
+    for (let target = idx + step; target >= 0 && target < visible.length; target += step) {
+      if (accept(visible[target])) return visible[target];
+    }
+    return null;
   }
 
   private orderedRootIds(): string[] {
