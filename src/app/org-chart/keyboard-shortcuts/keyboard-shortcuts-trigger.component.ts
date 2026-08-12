@@ -24,7 +24,7 @@ export type KeyboardShortcutsTriggerVariant = 'icon' | 'link';
   host: { style: 'display: contents' },
 })
 export class KeyboardShortcutsTriggerComponent {
-  private readonly shortcuts = inject(KeyboardShortcutsService);
+  private readonly shortcutsService = inject(KeyboardShortcutsService);
 
   readonly variant = input<KeyboardShortcutsTriggerVariant>('icon');
 
@@ -35,6 +35,6 @@ export class KeyboardShortcutsTriggerComponent {
   protected readonly isIcon = computed(() => this.variant() === 'icon');
 
   protected onClick(): void {
-    this.shortcuts.open(this.trigger().nativeElement);
+    this.shortcutsService.open(this.trigger().nativeElement);
   }
 }

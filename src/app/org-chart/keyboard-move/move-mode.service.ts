@@ -67,13 +67,13 @@ export class MoveModeService implements OnDestroy {
   private readonly candidatesService = inject(MoveCandidatesService);
   private readonly messages = inject(MoveMessageFactory);
   private readonly dropService = inject(DropService);
-  private readonly dragReorder = inject(DragReorderService);
-  private readonly diagramFocus = inject(DiagramFocusService);
-  private readonly navigation = inject(NavigationOrderService);
+  private readonly dragReorderService = inject(DragReorderService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
+  private readonly navigationService = inject(NavigationOrderService);
   private readonly layoutGate = inject(LayoutGate);
   private readonly layoutService = inject(LayoutService);
   private readonly hierarchyService = inject(HierarchyService);
-  private readonly nodeVisibility = inject(NodeVisibilityService);
+  private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly resultVisibleMs = inject(MOVE_RESULT_VISIBLE_MS);
 
@@ -106,13 +106,13 @@ export class MoveModeService implements OnDestroy {
 
   constructor() {
     effect(() => {
-      if (!this.dragReorder.isReorderActive()) return;
+      if (!this.dragReorderService.isReorderActive()) return;
       if (!untracked(this.isActive)) return;
       this.abandon();
     });
 
     effect(() => {
-      const focusedNodeId = this.diagramFocus.nodeWithFocusId();
+      const focusedNodeId = this.diagramFocusService.nodeWithFocusId();
       if (!untracked(this.isActive)) return;
       if (focusedNodeId === this.expectedFocusId) return;
       this.abandon();
@@ -128,7 +128,7 @@ export class MoveModeService implements OnDestroy {
   /** Reports and stays out rather than entering a mode that cannot work. */
   begin(nodeId: string): void {
     if (this.isActive()) return;
-    if (this.dragReorder.isReorderActive()) return;
+    if (this.dragReorderService.isReorderActive()) return;
     if (this.hierarchyService.getParentId(nodeId) === null) return;
 
     if (!this.layoutGate.isIdle()) {
@@ -179,7 +179,8 @@ export class MoveModeService implements OnDestroy {
     }
 
     const from = state.candidates.nodeIds[state.nodeIndex];
-    const targetId = this.navigation.getNextNodeId(from, key, this.layoutService.isHorizontal());
+    const isHorizontal = this.layoutService.isHorizontal();
+    const targetId = this.navigationService.getNextNodeId(from, key, isHorizontal);
     if (!targetId) return;
 
     const nodeIndex = state.candidates.nodeIds.indexOf(targetId);
@@ -234,7 +235,7 @@ export class MoveModeService implements OnDestroy {
     } catch {
       this.setResult(moveFailedMessage(moving));
     }
-    this.diagramFocus.focusNode(movingId);
+    this.diagramFocusService.focusNode(movingId);
   }
 
   /**
@@ -252,7 +253,7 @@ export class MoveModeService implements OnDestroy {
     }
 
     this.exit(moveCancelMessage(this.messages.nodeName(state.movingId)));
-    this.diagramFocus.focusNode(state.movingId);
+    this.diagramFocusService.focusNode(state.movingId);
   }
 
   /**
@@ -295,8 +296,8 @@ export class MoveModeService implements OnDestroy {
     const nodeId = candidates.nodeIds[nodeIndex];
     this.clearResultTimer();
     this.expectedFocusId = nodeId;
-    this.nodeVisibility.ensureVisible(nodeId);
-    this.diagramFocus.focusNode(nodeId);
+    this.nodeVisibilityService.ensureVisible(nodeId);
+    this.diagramFocusService.focusNode(nodeId);
     this.status.set(this.nodePicked(movingId, nodeId));
   }
 

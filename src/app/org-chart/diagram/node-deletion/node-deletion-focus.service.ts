@@ -13,30 +13,30 @@ import { NodeVisibilityService } from '../node-visibility/node-visibility.servic
  */
 @Injectable()
 export class NodeDeletionFocusService {
-  private readonly hierarchy = inject(HierarchyService);
-  private readonly sortOrder = inject(SortOrderService);
-  private readonly nodeVisibility = inject(NodeVisibilityService);
-  private readonly nodeFocus = inject(NodeFocusService);
-  private readonly diagramFocus = inject(DiagramFocusService);
+  private readonly hierarchyService = inject(HierarchyService);
+  private readonly sortOrderService = inject(SortOrderService);
+  private readonly nodeVisibilityService = inject(NodeVisibilityService);
+  private readonly nodeFocusService = inject(NodeFocusService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
 
   get diagramSurface(): HTMLElement | null {
-    return this.diagramFocus.diagramSurface;
+    return this.diagramFocusService.diagramSurface;
   }
 
   /** Step 1, before the deletion. */
   resolveSuccessor(nodeId: string): string | null {
-    const parentId = this.hierarchy.getParentId(nodeId);
+    const parentId = this.hierarchyService.getParentId(nodeId);
     if (parentId) return parentId;
-    return this.sortOrder.getSortedChildren(nodeId).at(0)?.id ?? null;
+    return this.sortOrderService.getSortedChildren(nodeId).at(0)?.id ?? null;
   }
 
   /** Step 2, after the deletion. */
   focusSuccessor(successorId: string | null): void {
     if (!successorId) {
-      this.diagramFocus.focusEntryNode();
+      this.diagramFocusService.focusEntryNode();
       return;
     }
-    this.nodeVisibility.ensureVisible(successorId);
-    this.nodeFocus.focus(successorId);
+    this.nodeVisibilityService.ensureVisible(successorId);
+    this.nodeFocusService.focus(successorId);
   }
 }

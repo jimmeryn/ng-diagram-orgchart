@@ -34,7 +34,7 @@ import { PropertiesSidebarService } from './properties-sidebar.service';
 })
 export class PropertiesSidebarComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
-  private readonly nodeDeletion = inject(NodeDeletionService);
+  private readonly nodeDeletionService = inject(NodeDeletionService);
 
   protected readonly isExpanded = this.sidebarService.isExpanded;
   protected readonly state = this.sidebarService.sidebarState;
@@ -57,6 +57,6 @@ export class PropertiesSidebarComponent {
   protected onRemoveNode(opener: HTMLElement): void {
     const nodeId = this.sidebarService.selectedNode()?.id;
     if (!nodeId) return;
-    this.nodeDeletion.requestDelete(nodeId, opener);
+    this.nodeDeletionService.requestDelete(nodeId, opener);
   }
 }

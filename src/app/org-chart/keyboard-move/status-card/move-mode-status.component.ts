@@ -14,9 +14,9 @@ import { MoveModeService } from '../move-mode.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MoveModeStatusComponent {
-  private readonly moveMode = inject(MoveModeService);
+  private readonly moveModeService = inject(MoveModeService);
 
-  protected readonly message = this.moveMode.message;
-  protected readonly isActive = this.moveMode.isActive;
-  protected readonly isPickingSide = this.moveMode.isPickingSide;
+  protected readonly message = this.moveModeService.message;
+  protected readonly isActive = this.moveModeService.isActive;
+  protected readonly isPickingSide = this.moveModeService.isPickingSide;
 }

@@ -17,7 +17,7 @@ import {
 export class MoveCandidatesService {
   private readonly hierarchyService = inject(HierarchyService);
   private readonly sortOrderService = inject(SortOrderService);
-  private readonly navigation = inject(NavigationOrderService);
+  private readonly navigationService = inject(NavigationOrderService);
   private readonly dragService = inject(DragService);
 
   /**
@@ -31,7 +31,7 @@ export class MoveCandidatesService {
     const hiddenSides = this.dragService.getHiddenSides(movingId);
     const all: MoveCandidate[] = [];
 
-    for (const nodeId of this.navigation.getVisibleTreeOrder(isHorizontal)) {
+    for (const nodeId of this.navigationService.getVisibleTreeOrder(isHorizontal)) {
       for (const side of visibleDropSides(hiddenSides.get(nodeId))) {
         const candidate = this.toCandidate(nodeId, side);
         if (candidate && !this.changesNothing(candidate, movingId)) all.push(candidate);

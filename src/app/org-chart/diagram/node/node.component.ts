@@ -89,9 +89,9 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   private readonly viewportService = inject(NgDiagramViewportService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly dragReorderService = inject(DragReorderService);
-  private readonly moveMode = inject(MoveModeService);
+  private readonly moveModeService = inject(MoveModeService);
   private readonly nodeFocusService = inject(NodeFocusService);
-  private readonly diagramFocus = inject(DiagramFocusService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
@@ -117,7 +117,7 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   protected isHorizontal = this.layoutService.isHorizontal;
 
   protected nodeId = computed(() => this.node().id);
-  protected isTabStop = computed(() => this.diagramFocus.entryNodeId() === this.nodeId());
+  protected isTabStop = computed(() => this.diagramFocusService.entryNodeId() === this.nodeId());
   protected isHidden = computed(() => getIsHidden(this.node()));
   protected variant = computed<NodeVariant>(() => {
     if (isVacantNode(this.node())) return 'vacant';
@@ -144,8 +144,8 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
     () => {
       const id = this.nodeId();
 
-      if (this.moveMode.isActive()) {
-        const own = this.moveMode.handles().filter((handle) => handle.nodeId === id);
+      if (this.moveModeService.isActive()) {
+        const own = this.moveModeService.handles().filter((handle) => handle.nodeId === id);
         if (own.length === 0) return null;
         const current = own.find((handle) => handle.current)?.side ?? null;
         return buildIndicatorStates(new Set(own.map((handle) => handle.side)), current);
@@ -170,10 +170,10 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
     return !connectedEdges.some((e) => e.target === id);
   });
   protected readonly containsFocus = computed(
-    () => this.diagramFocus.nodeWithFocusId() === this.nodeId(),
+    () => this.diagramFocusService.nodeWithFocusId() === this.nodeId(),
   );
   private readonly actionsAllowed = computed(
-    () => !this.dragReorderService.isReorderActive() && !this.moveMode.isActive(),
+    () => !this.dragReorderService.isReorderActive() && !this.moveModeService.isActive(),
   );
 
   protected showAddButtons = computed(
@@ -194,7 +194,7 @@ export class NodeComponent implements NgDiagramNodeTemplate<OrgChartNodeData> {
   });
 
   protected onFocusIn(event: FocusEvent): void {
-    this.diagramFocus.handleNodeFocus(this.nodeId(), event.relatedTarget);
+    this.diagramFocusService.handleNodeFocus(this.nodeId(), event.relatedTarget);
   }
 
   protected readonly ariaLabel = computed(() => {

@@ -80,7 +80,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
   ],
 })
 export class OrgChartPageComponent {
-  private readonly diagramFocus = inject(DiagramFocusService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
 
   constructor() {
     trackFocusInputModality();
@@ -88,14 +88,14 @@ export class OrgChartPageComponent {
 
   onSkipToDiagram(event: Event): void {
     event.preventDefault();
-    this.diagramFocus.focusEntryNode();
+    this.diagramFocusService.focusEntryNode();
   }
 
   protected onPageFocusIn(event: FocusEvent): void {
-    this.diagramFocus.handlePageFocusIn(event.target);
+    this.diagramFocusService.handlePageFocusIn(event.target);
   }
 
   protected onPageFocusOut(event: FocusEvent): void {
-    this.diagramFocus.handlePageFocusOut(event.relatedTarget);
+    this.diagramFocusService.handlePageFocusOut(event.relatedTarget);
   }
 }

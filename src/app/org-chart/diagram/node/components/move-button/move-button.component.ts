@@ -8,7 +8,7 @@ import { MoveModeService } from '../../../../keyboard-move';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MoveButtonComponent {
-  private readonly moveMode = inject(MoveModeService);
+  private readonly moveModeService = inject(MoveModeService);
 
   nodeId = input.required<string>();
 
@@ -18,6 +18,6 @@ export class MoveButtonComponent {
    */
   protected onMove(event: MouseEvent): void {
     event.stopPropagation();
-    this.moveMode.begin(this.nodeId());
+    this.moveModeService.begin(this.nodeId());
   }
 }

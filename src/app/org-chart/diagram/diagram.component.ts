@@ -82,7 +82,7 @@ export class DiagramComponent {
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
   private readonly keyboardService = inject(DiagramKeyboardService);
-  private readonly diagramFocus = inject(DiagramFocusService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
 
   private readonly diagramMain = viewChild('diagramMain', { read: ElementRef<HTMLElement> });
 
@@ -90,7 +90,7 @@ export class DiagramComponent {
     effect(() => {
       const element = this.diagramMain()?.nativeElement ?? null;
       this.sidebarService.setFallbackFocusTarget(element);
-      this.diagramFocus.setFallbackTarget(element);
+      this.diagramFocusService.setFallbackTarget(element);
     });
   }
 
@@ -155,7 +155,7 @@ export class DiagramComponent {
       }
     }
 
-    this.diagramFocus.recoverFocusIfLost();
+    this.diagramFocusService.recoverFocusIfLost();
   }
 
   /** Opens the properties sidebar when org-chart nodes are selected. */

@@ -20,10 +20,10 @@ import { NodeFocusService } from './node-focus.service';
  */
 @Injectable()
 export class DiagramFocusService {
-  private readonly navigation = inject(NavigationOrderService);
+  private readonly navigationService = inject(NavigationOrderService);
   private readonly layoutService = inject(LayoutService);
-  private readonly nodeVisibility = inject(NodeVisibilityService);
-  private readonly nodeFocus = inject(NodeFocusService);
+  private readonly nodeVisibilityService = inject(NodeVisibilityService);
+  private readonly nodeFocusService = inject(NodeFocusService);
   private readonly modelService = inject(NgDiagramModelService);
 
   private readonly lastFocusedNodeId = signal<string | null>(null);
@@ -38,7 +38,7 @@ export class DiagramFocusService {
     this.modelService.nodes();
     this.modelService.edges();
 
-    const tabOrder = this.navigation.getVisibleTreeOrder(this.layoutService.isHorizontal());
+    const tabOrder = this.navigationService.getVisibleTreeOrder(this.layoutService.isHorizontal());
     const remembered = this.lastFocusedNodeId();
     if (remembered && tabOrder.includes(remembered)) return remembered;
     return tabOrder.at(0) ?? null;
@@ -47,7 +47,7 @@ export class DiagramFocusService {
   handleNodeFocus(nodeId: string, from: EventTarget | null): void {
     this.lastFocusedNodeId.set(nodeId);
     if (isInsideDiagram(from)) return;
-    this.nodeVisibility.ensureVisible(nodeId);
+    this.nodeVisibilityService.ensureVisible(nodeId);
   }
 
   /**
@@ -78,7 +78,7 @@ export class DiagramFocusService {
   /** Focuses a node on the app's behalf. Not a pointer press, so the node keeps the focus. */
   focusNode(nodeId: string): void {
     this.lastInputWasPointer = false;
-    this.nodeFocus.focus(nodeId);
+    this.nodeFocusService.focus(nodeId);
   }
 
   /** ng-diagram prevents the default blur on a press on the canvas. Blur the node host. */
@@ -126,7 +126,7 @@ export class DiagramFocusService {
       this.fallbackTarget?.focus({ preventScroll: true });
       return;
     }
-    this.nodeVisibility.ensureVisible(nodeId);
+    this.nodeVisibilityService.ensureVisible(nodeId);
     this.focusNode(nodeId);
   }
 

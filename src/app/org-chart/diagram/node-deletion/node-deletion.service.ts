@@ -17,9 +17,9 @@ type DeletionPhase = 'idle' | 'confirming' | 'resolving';
 @Injectable()
 export class NodeDeletionService {
   private readonly layoutGate = inject(LayoutGate);
-  private readonly nodeMutation = inject(NodeMutationService);
+  private readonly nodeMutationService = inject(NodeMutationService);
   private readonly confirmations = inject(DeleteConfirmationFactory);
-  private readonly focus = inject(NodeDeletionFocusService);
+  private readonly focusService = inject(NodeDeletionFocusService);
 
   private readonly phase = signal<DeletionPhase>('idle');
   private readonly request = signal<DeleteRequest | null>(null);
@@ -56,12 +56,12 @@ export class NodeDeletionService {
     if (!pending) return;
     this.phase.set('resolving');
 
-    this.returnFocus.set(this.focus.diagramSurface);
-    const successorId = this.focus.resolveSuccessor(pending.nodeId);
+    this.returnFocus.set(this.focusService.diagramSurface);
+    const successorId = this.focusService.resolveSuccessor(pending.nodeId);
 
     try {
-      await this.nodeMutation.removeNode(pending.nodeId);
-      this.focus.focusSuccessor(successorId);
+      await this.nodeMutationService.removeNode(pending.nodeId);
+      this.focusService.focusSuccessor(successorId);
     } finally {
       this.request.set(null);
       this.phase.set('idle');

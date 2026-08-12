@@ -38,14 +38,14 @@ import { NodeFocusService } from '../focus/node-focus.service';
 export class DiagramKeyboardService {
   private readonly selectionService = inject(NgDiagramSelectionService);
   private readonly layoutService = inject(LayoutService);
-  private readonly navigation = inject(NavigationOrderService);
-  private readonly nodeVisibility = inject(NodeVisibilityService);
-  private readonly nodeFocus = inject(NodeFocusService);
-  private readonly sidebar = inject(PropertiesSidebarService);
-  private readonly expandCollapse = inject(ExpandCollapseService);
-  private readonly modelApply = inject(ModelApplyService);
-  private readonly nodeDeletion = inject(NodeDeletionService);
-  private readonly moveMode = inject(MoveModeService);
+  private readonly navigationService = inject(NavigationOrderService);
+  private readonly nodeVisibilityService = inject(NodeVisibilityService);
+  private readonly nodeFocusService = inject(NodeFocusService);
+  private readonly sidebarService = inject(PropertiesSidebarService);
+  private readonly expandCollapseService = inject(ExpandCollapseService);
+  private readonly modelApplyService = inject(ModelApplyService);
+  private readonly nodeDeletionService = inject(NodeDeletionService);
+  private readonly moveModeService = inject(MoveModeService);
 
   /**
    * While a node is being moved, every key that would change the model has to be stopped before
@@ -92,7 +92,7 @@ export class DiagramKeyboardService {
   ];
 
   handle(event: KeyboardEvent): void {
-    if (this.moveMode.isActive()) {
+    if (this.moveModeService.isActive()) {
       this.run(this.moveModeBindings, event, undefined);
       return;
     }
@@ -114,43 +114,43 @@ export class DiagramKeyboardService {
     focus: TFocus,
   ): void {
     const binding = bindings.find((b) => b.match(event));
-    if (binding) void binding.run(event, focus);
+    if (binding) binding.run(event, focus);
   }
 
   private moveFocus(event: KeyboardEvent, nodeId: string): void {
-    const targetId = this.navigation.getAdjacentNodeId(
+    const targetId = this.navigationService.getAdjacentNodeId(
       nodeId,
       event.shiftKey ? -1 : 1,
       this.layoutService.isHorizontal(),
     );
     if (!targetId) return;
     event.preventDefault();
-    this.nodeVisibility.ensureVisible(targetId);
-    this.nodeFocus.focus(targetId);
+    this.nodeVisibilityService.ensureVisible(targetId);
+    this.nodeFocusService.focus(targetId);
   }
 
   private moveFocusInDirection(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallowFromLibrary(event);
-    const targetId = this.navigation.getNextNodeId(
+    const targetId = this.navigationService.getNextNodeId(
       focus.nodeId,
       event.key as ArrowKey,
       this.layoutService.isHorizontal(),
     );
     if (!targetId) return;
-    this.nodeVisibility.ensureVisible(targetId);
-    this.nodeFocus.focus(targetId);
+    this.nodeVisibilityService.ensureVisible(targetId);
+    this.nodeFocusService.focus(targetId);
   }
 
   private selectAndDescend(event: KeyboardEvent, focus: FocusedNode): void {
     swallow(event);
     this.selectionService.select([focus.nodeId]);
-    this.nodeFocus.focusFirstAction(focus.nodeId);
+    this.nodeFocusService.focusFirstAction(focus.nodeId);
   }
 
   private selectAndOpenSidebar(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallow(event);
     this.selectionService.select([focus.nodeId]);
-    this.sidebar.expandSidebar(focus.host);
+    this.sidebarService.expandSidebar(focus.host);
   }
 
   private clearSelection(event: KeyboardEvent): void {
@@ -162,12 +162,12 @@ export class DiagramKeyboardService {
 
   private async toggleExpand(event: KeyboardEvent, focus: FocusedNode): Promise<void> {
     swallow(event);
-    const result = this.expandCollapse.prepareToggle(focus.nodeId);
+    const result = this.expandCollapseService.prepareToggle(focus.nodeId);
     if (!result) return;
-    await this.modelApply.applyWithLayout(result.changes, {
+    await this.modelApplyService.applyWithLayout(result.changes, {
       visibility: { subtreeIds: result.toggledSubtreeIds, collapsing: result.collapsing },
     });
-    this.nodeVisibility.ensureVisible(focus.nodeId);
+    this.nodeVisibilityService.ensureVisible(focus.nodeId);
   }
 
   private moveFocusWithinActions(event: KeyboardEvent, focus: FocusedNodeAction): void {
@@ -188,27 +188,27 @@ export class DiagramKeyboardService {
   /** Always stop the key. If it gets through, the library deletes the selection unconfirmed. */
   private requestDelete(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallowFromLibrary(event);
-    this.nodeDeletion.requestDelete(focus.nodeId, focus.host);
+    this.nodeDeletionService.requestDelete(focus.nodeId, focus.host);
   }
 
   private cancelMove(event: KeyboardEvent): void {
     swallow(event);
-    this.moveMode.cancel();
+    this.moveModeService.cancel();
   }
 
   private async confirmMove(event: KeyboardEvent): Promise<void> {
     swallow(event);
-    await this.moveMode.confirm();
+    await this.moveModeService.confirm();
   }
 
   private stepMove(event: KeyboardEvent): void {
     swallow(event);
-    this.moveMode.step(event.shiftKey ? -1 : 1);
+    this.moveModeService.step(event.shiftKey ? -1 : 1);
   }
 
   /** The arrow has to be stopped as well, or the library nudges the moved node by a pixel. */
   private stepMoveByArrow(event: KeyboardEvent): void {
     swallowFromLibrary(event);
-    this.moveMode.stepByArrow(event.key as ArrowKey);
+    this.moveModeService.stepByArrow(event.key as ArrowKey);
   }
 }

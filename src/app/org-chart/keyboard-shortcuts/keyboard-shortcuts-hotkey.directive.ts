@@ -20,13 +20,13 @@ function isInsideOpenDialog(target: EventTarget | null): boolean {
   host: { '(document:keydown)': 'onKeydown($event)' },
 })
 export class KeyboardShortcutsHotkeyDirective {
-  private readonly shortcuts = inject(KeyboardShortcutsService);
+  private readonly shortcutsService = inject(KeyboardShortcutsService);
 
   protected onKeydown(event: KeyboardEvent): void {
     if (event.key !== KEYBOARD_SHORTCUTS_HOTKEY || event.defaultPrevented) return;
     if (isTextEntryTarget(event.target)) return;
     if (isInsideOpenDialog(event.target)) return;
     event.preventDefault();
-    this.shortcuts.open();
+    this.shortcutsService.open();
   }
 }
