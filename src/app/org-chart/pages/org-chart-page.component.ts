@@ -8,14 +8,15 @@ import { AddNodeService } from '../diagram/model/add-node.service';
 import { ExpandCollapseService } from '../diagram/model/expand-collapse.service';
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
+import { RemoveNodeService } from '../diagram/model/remove-node.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagram-focus.service';
 import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/focus/diagram-modal-focus-restore';
 import { trackFocusInputModality } from '../diagram/keyboard-navigation/focus/focus-input-modality';
 import { NavigationOrderService } from '../diagram/keyboard-navigation/order/navigation-order.service';
 import { NodeFocusService } from '../diagram/keyboard-navigation/focus/node-focus.service';
-import { ConfirmDeleteDialogComponent } from '../diagram/node-deletion/confirm-delete-dialog.component';
-import { provideNodeDeletion } from '../diagram/node-deletion/node-deletion.providers';
+import { ConfirmDeleteDialogComponent } from '../diagram/confirm-delete/confirm-delete-dialog.component';
+import { provideConfirmDelete } from '../diagram/confirm-delete/confirm-delete.providers';
 import { NodeVisibilityConfigService } from '../diagram/node-visibility/node-visibility-config.service';
 import { NodeVisibilityService } from '../diagram/node-visibility/node-visibility.service';
 import { ViewportBoundsDirective } from '../diagram/node-visibility/viewport-bounds.directive';
@@ -67,6 +68,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     ModelApplyService,
     HierarchyService,
     AddNodeService,
+    RemoveNodeService,
     AddButtonService,
     LayoutAnimationService,
     NodeVisibilityService,
@@ -75,7 +77,7 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     NodeFocusService,
     DiagramFocusService,
     ...provideKeyboardShortcuts(),
-    ...provideNodeDeletion(),
+    ...provideConfirmDelete(),
     provideDiagramModalFocusRestore(),
   ],
 })

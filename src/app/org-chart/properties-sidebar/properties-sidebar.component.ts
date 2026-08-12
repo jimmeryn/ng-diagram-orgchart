@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { NodeDeletionService } from '../diagram/node-deletion/node-deletion.service';
+import { ConfirmDeleteDialogService } from '../diagram/confirm-delete/confirm-delete-dialog.service';
 import { SidebarFormComponent } from './components/sidebar-form/sidebar-form.component';
 import {
   ON_FIELD_CHANGE,
@@ -34,7 +34,7 @@ import { PropertiesSidebarService } from './properties-sidebar.service';
 })
 export class PropertiesSidebarComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
-  private readonly nodeDeletionService = inject(NodeDeletionService);
+  private readonly confirmDeleteService = inject(ConfirmDeleteDialogService);
 
   protected readonly isExpanded = this.sidebarService.isExpanded;
   protected readonly state = this.sidebarService.sidebarState;
@@ -54,9 +54,9 @@ export class PropertiesSidebarComponent {
     }
   }
 
-  protected onRemoveNode(opener: HTMLElement): void {
+  protected onDeleteNode(opener: HTMLElement): void {
     const nodeId = this.sidebarService.selectedNode()?.id;
     if (!nodeId) return;
-    this.nodeDeletionService.requestDelete(nodeId, opener);
+    this.confirmDeleteService.requestDelete(nodeId, opener);
   }
 }

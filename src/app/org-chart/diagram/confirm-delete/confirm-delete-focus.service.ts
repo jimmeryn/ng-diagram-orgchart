@@ -10,12 +10,13 @@ import { SortOrderService } from '../model/sort-order.service';
  * collapsed root's first child cannot take the focus until the deletion makes it visible.
  */
 @Injectable()
-export class NodeDeletionFocusService {
+export class ConfirmDeleteFocusService {
   private readonly hierarchyService = inject(HierarchyService);
   private readonly sortOrderService = inject(SortOrderService);
   private readonly diagramFocusService = inject(DiagramFocusService);
 
-  get diagramSurface(): HTMLElement | null {
+  /** Where the dialog hands the focus back, for a delete that removes the element it came from. */
+  get returnTarget(): HTMLElement | null {
     return this.diagramFocusService.diagramSurface;
   }
 

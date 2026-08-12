@@ -1,9 +1,4 @@
-<app-modal-dialog
-  [heading]="title"
-  [open]="shortcuts.isOpen()"
-  [opener]="shortcuts.opener()"
-  (closed)="shortcuts.close()"
->
+<app-modal-dialog [heading]="title" [open]="isOpen()" [opener]="opener()" (closed)="onClose()">
   <table class="shortcuts-table">
     <thead>
       <tr>
@@ -35,5 +30,5 @@
       }
     </tbody>
   </table>
-  <button modalFooter type="button" class="close-button" (click)="shortcuts.close()">Close</button>
+  <button modalFooter type="button" class="close-button" (click)="onClose()">Close</button>
 </app-modal-dialog>

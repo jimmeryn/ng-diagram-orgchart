@@ -5,7 +5,7 @@ import { PropertiesSidebarService } from '../../../properties-sidebar/properties
 import { LayoutService } from '../../layout/layout.service';
 import { ExpandCollapseService } from '../../model/expand-collapse.service';
 import { ModelApplyService } from '../../model/model-apply.service';
-import { NodeDeletionService } from '../../node-deletion/node-deletion.service';
+import { ConfirmDeleteDialogService } from '../../confirm-delete/confirm-delete-dialog.service';
 import { NodeVisibilityService } from '../../node-visibility/node-visibility.service';
 import { isArrowKey, type ArrowKey } from '../order/arrow-keys';
 import {
@@ -46,7 +46,7 @@ export class DiagramKeyboardService {
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly expandCollapseService = inject(ExpandCollapseService);
   private readonly modelApplyService = inject(ModelApplyService);
-  private readonly nodeDeletionService = inject(NodeDeletionService);
+  private readonly confirmDeleteService = inject(ConfirmDeleteDialogService);
   private readonly moveModeService = inject(MoveModeService);
 
   /**
@@ -188,7 +188,7 @@ export class DiagramKeyboardService {
   /** Always stop the key. If it gets through, the library deletes the selection unconfirmed. */
   private requestDelete(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallowFromLibrary(event);
-    this.nodeDeletionService.requestDelete(focus.nodeId, focus.host);
+    this.confirmDeleteService.requestDelete(focus.nodeId, focus.host);
   }
 
   private cancelMove(event: KeyboardEvent): void {

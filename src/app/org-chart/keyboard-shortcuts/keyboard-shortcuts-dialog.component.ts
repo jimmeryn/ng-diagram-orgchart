@@ -16,8 +16,15 @@ import { KeyboardShortcutsService } from './keyboard-shortcuts.service';
   host: { style: 'display: contents' },
 })
 export class KeyboardShortcutsDialogComponent {
-  protected readonly shortcuts = inject(KeyboardShortcutsService);
+  private readonly shortcutsService = inject(KeyboardShortcutsService);
+
+  protected readonly isOpen = this.shortcutsService.isOpen;
+  protected readonly opener = this.shortcutsService.opener;
   protected readonly title = KEYBOARD_SHORTCUTS_TITLE;
   protected readonly rows = SHORTCUTS;
   protected readonly spokenKey = spokenKey;
+
+  protected onClose(): void {
+    this.shortcutsService.close();
+  }
 }

@@ -1,16 +1,16 @@
 <app-modal-dialog
   dialogRole="alertdialog"
-  [heading]="confirmation()?.title ?? ''"
-  [open]="deletion.isOpen()"
+  [heading]="message()?.title ?? ''"
+  [open]="isOpen()"
   contentId="confirm-delete-description"
   [scrollableContent]="false"
   [initialFocus]="cancelButton"
-  [returnFocusTo]="deletion.returnFocusTarget()"
+  [returnFocusTo]="returnFocusTarget()"
   [dismissOnBackdrop]="false"
-  (closed)="deletion.cancel()"
+  (closed)="onCancel()"
 >
   <div class="consequences">
-    @for (sentence of confirmation()?.sentences ?? []; track $index) {
+    @for (sentence of message()?.sentences ?? []; track $index) {
       <p>{{ sentence }}</p>
     }
   </div>
@@ -20,16 +20,16 @@
       #cancelButton
       type="button"
       class="action action--cancel"
-      [disabled]="deletion.isActivated()"
-      (click)="deletion.cancel()"
+      [disabled]="isActivated()"
+      (click)="onCancel()"
     >
       Cancel
     </button>
     <button
       type="button"
       class="action action--confirm"
-      [disabled]="deletion.isActivated()"
-      (click)="deletion.confirm()"
+      [disabled]="isActivated()"
+      (click)="onConfirm()"
     >
       Delete
     </button>
