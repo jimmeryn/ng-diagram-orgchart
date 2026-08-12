@@ -75,6 +75,12 @@ export class DiagramFocusService {
     this.nodeWithFocus.set(focus.nodeId);
   }
 
+  /** Focuses a node on the app's behalf. Not a pointer press, so the node keeps the focus. */
+  focusNode(nodeId: string): void {
+    this.lastInputWasPointer = false;
+    this.nodeFocus.focus(nodeId);
+  }
+
   /** ng-diagram prevents the default blur on a press on the canvas. Blur the node host. */
   private releaseFocusedNode(): void {
     this.nodeWithFocus.set(null);
@@ -121,7 +127,7 @@ export class DiagramFocusService {
       return;
     }
     this.nodeVisibility.ensureVisible(nodeId);
-    this.nodeFocus.focus(nodeId);
+    this.focusNode(nodeId);
   }
 
   recoverFocusIfLost(): void {

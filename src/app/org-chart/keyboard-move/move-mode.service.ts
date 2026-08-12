@@ -12,7 +12,6 @@ import { NgDiagramModelService } from 'ng-diagram';
 import { DragReorderService } from '../drag-reorder/drag-reorder.service';
 import { DropService } from '../drag-reorder/drop.service';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagram-focus.service';
-import { NodeFocusService } from '../diagram/keyboard-navigation/focus/node-focus.service';
 import { NavigationOrderService } from '../diagram/keyboard-navigation/order/navigation-order.service';
 import type { ArrowKey } from '../diagram/keyboard-navigation/order/arrow-keys';
 import { LayoutGate } from '../diagram/layout/layout-gate';
@@ -70,7 +69,6 @@ export class MoveModeService implements OnDestroy {
   private readonly dropService = inject(DropService);
   private readonly dragReorder = inject(DragReorderService);
   private readonly diagramFocus = inject(DiagramFocusService);
-  private readonly nodeFocus = inject(NodeFocusService);
   private readonly navigation = inject(NavigationOrderService);
   private readonly layoutGate = inject(LayoutGate);
   private readonly layoutService = inject(LayoutService);
@@ -236,7 +234,7 @@ export class MoveModeService implements OnDestroy {
     } catch {
       this.setResult(moveFailedMessage(moving));
     }
-    this.nodeFocus.focus(movingId);
+    this.diagramFocus.focusNode(movingId);
   }
 
   /**
@@ -254,7 +252,7 @@ export class MoveModeService implements OnDestroy {
     }
 
     this.exit(moveCancelMessage(this.messages.nodeName(state.movingId)));
-    this.nodeFocus.focus(state.movingId);
+    this.diagramFocus.focusNode(state.movingId);
   }
 
   /**
@@ -298,7 +296,7 @@ export class MoveModeService implements OnDestroy {
     this.clearResultTimer();
     this.expectedFocusId = nodeId;
     this.nodeVisibility.ensureVisible(nodeId);
-    this.nodeFocus.focus(nodeId);
+    this.diagramFocus.focusNode(nodeId);
     this.status.set(this.nodePicked(movingId, nodeId));
   }
 
