@@ -1,6 +1,4 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { NgDiagramModelService } from 'ng-diagram';
-import { LayoutService } from '../../layout/layout.service';
 import { NodeVisibilityService } from '../../node-visibility/node-visibility.service';
 import {
   isInsideRegion,
@@ -21,10 +19,8 @@ import { NodeFocusService } from './node-focus.service';
 @Injectable()
 export class DiagramFocusService {
   private readonly navigationService = inject(NavigationOrderService);
-  private readonly layoutService = inject(LayoutService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeFocusService = inject(NodeFocusService);
-  private readonly modelService = inject(NgDiagramModelService);
   private readonly regions = inject(DIAGRAM_FOCUS_REGIONS);
 
   private readonly retainingSelector = this.regions.retaining.join(', ');
@@ -38,13 +34,9 @@ export class DiagramFocusService {
   readonly nodeWithFocusId = this.nodeWithFocus.asReadonly();
 
   readonly entryNodeId = computed<string | null>(() => {
-    this.modelService.nodes();
-    this.modelService.edges();
-
-    const tabOrder = this.navigationService.getVisibleTreeOrder(this.layoutService.isHorizontal());
     const remembered = this.lastFocusedNodeId();
-    if (remembered && tabOrder.includes(remembered)) return remembered;
-    return tabOrder.at(0) ?? null;
+    if (remembered && this.navigationService.isInTabOrder(remembered)) return remembered;
+    return this.navigationService.visibleTreeOrder().at(0) ?? null;
   });
 
   handleNodeFocus(nodeId: string, from: EventTarget | null): void {

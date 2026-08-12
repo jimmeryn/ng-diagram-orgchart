@@ -1,5 +1,6 @@
-import { inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { NgDiagramModelService } from 'ng-diagram';
+import { LayoutService } from '../../layout/layout.service';
 import { getIsHidden } from '../../model/data-getters';
 import { HierarchyService } from '../../model/hierarchy.service';
 import { SortOrderService } from '../../model/sort-order.service';
@@ -14,9 +15,40 @@ export class NavigationOrderService {
   private readonly modelService = inject(NgDiagramModelService);
   private readonly hierarchyService = inject(HierarchyService);
   private readonly sortOrderService = inject(SortOrderService);
+  private readonly layoutService = inject(LayoutService);
 
-  getNextNodeId(currentId: string, arrowKey: ArrowKey, isHorizontal: boolean): string | null {
-    const direction = getArrowStrategy(isHorizontal).toDirection(arrowKey);
+  /**
+   * Visible nodes depth-first: every node immediately followed by its subtree.
+   *
+   * The library lookups this walks are plain maps rather than signals, so the model signals are
+   * read here to state what the order depends on. Every keystroke that leaves the chart alone
+   * then reuses the walk instead of repeating it.
+   */
+  readonly visibleTreeOrder = computed<readonly string[]>(() => {
+    this.modelService.nodes();
+    this.modelService.edges();
+    return this.walkVisibleTree();
+  });
+
+  private readonly orderIndex = computed<ReadonlyMap<string, number>>(() => {
+    const index = new Map<string, number>();
+    this.visibleTreeOrder().forEach((nodeId, position) => index.set(nodeId, position));
+    return index;
+  });
+
+  /** Whether the node is currently a tab stop. */
+  isInTabOrder(nodeId: string): boolean {
+    return this.orderIndex().has(nodeId);
+  }
+
+  getAdjacentNodeId(currentId: string, step: 1 | -1): string | null {
+    const position = this.orderIndex().get(currentId);
+    if (position === undefined) return null;
+    return this.visibleTreeOrder()[position + step] ?? null;
+  }
+
+  getNextNodeId(currentId: string, arrowKey: ArrowKey): string | null {
+    const direction = getArrowStrategy(this.layoutService.isHorizontal()).toDirection(arrowKey);
     if (!direction) return null;
     switch (direction) {
       case 'parent':
@@ -24,17 +56,16 @@ export class NavigationOrderService {
       case 'firstChild':
         return this.findFirstVisibleChild(currentId);
       case 'prevSibling':
-        return this.findSibling(currentId, -1, isHorizontal);
+        return this.findSibling(currentId, -1);
       case 'nextSibling':
-        return this.findSibling(currentId, 1, isHorizontal);
+        return this.findSibling(currentId, 1);
     }
   }
 
-  /** Visible nodes depth-first: every node immediately followed by its subtree. */
-  getVisibleTreeOrder(isHorizontal: boolean): string[] {
+  private walkVisibleTree(): string[] {
     const order: string[] = [];
     const visited = new Set<string>();
-    const stack = [...this.orderedRootIds(isHorizontal)].reverse();
+    const stack = [...this.orderedRootIds()].reverse();
 
     while (stack.length > 0) {
       const id = stack.pop()!;
@@ -50,13 +81,6 @@ export class NavigationOrderService {
     }
 
     return order;
-  }
-
-  getAdjacentNodeId(currentId: string, step: 1 | -1, isHorizontal: boolean): string | null {
-    const order = this.getVisibleTreeOrder(isHorizontal);
-    const index = order.indexOf(currentId);
-    if (index < 0) return null;
-    return order[index + step] ?? null;
   }
 
   private findVisibleParent(currentId: string): string | null {
@@ -76,12 +100,12 @@ export class NavigationOrderService {
     return null;
   }
 
-  private findSibling(currentId: string, step: number, isHorizontal: boolean): string | null {
+  private findSibling(currentId: string, step: number): string | null {
     const parentId = this.hierarchyService.getParentId(currentId);
 
     const siblingIds = parentId
       ? this.sortOrderService.getSortedChildren(parentId).map((c) => c.id)
-      : this.orderedRootIds(isHorizontal);
+      : this.orderedRootIds();
 
     const visible = siblingIds.filter((id) => {
       const node = this.modelService.getNodeById(id);
@@ -96,8 +120,8 @@ export class NavigationOrderService {
     return visible[targetIdx];
   }
 
-  private orderedRootIds(isHorizontal: boolean): string[] {
-    const axis = isHorizontal ? 'y' : 'x';
+  private orderedRootIds(): string[] {
+    const axis = this.layoutService.isHorizontal() ? 'y' : 'x';
     return this.hierarchyService
       .getRootIds()
       .map((id) => ({ id, pos: this.modelService.getNodeById(id)?.position[axis] ?? 0 }))

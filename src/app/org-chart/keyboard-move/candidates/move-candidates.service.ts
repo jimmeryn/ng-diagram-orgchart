@@ -27,11 +27,11 @@ export class MoveCandidatesService {
    * Not bounded by distance, unlike the pointer path: reaching a position the pointer can only
    * get to by scrolling first is the reason this feature exists.
    */
-  build(movingId: string, isHorizontal: boolean): MoveCandidates {
+  build(movingId: string): MoveCandidates {
     const hiddenSides = this.dragService.getHiddenSides(movingId);
     const all: MoveCandidate[] = [];
 
-    for (const nodeId of this.navigationService.getVisibleTreeOrder(isHorizontal)) {
+    for (const nodeId of this.navigationService.visibleTreeOrder()) {
       for (const side of visibleDropSides(hiddenSides.get(nodeId))) {
         const candidate = this.toCandidate(nodeId, side);
         if (candidate && !this.changesNothing(candidate, movingId)) all.push(candidate);

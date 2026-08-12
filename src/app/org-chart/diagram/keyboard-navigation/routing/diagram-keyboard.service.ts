@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { NgDiagramSelectionService } from 'ng-diagram';
 import { MoveModeService } from '../../../keyboard-move';
 import { PropertiesSidebarService } from '../../../properties-sidebar/properties-sidebar.service';
-import { LayoutService } from '../../layout/layout.service';
 import { ExpandCollapseService } from '../../model/expand-collapse.service';
 import { ModelApplyService } from '../../model/model-apply.service';
 import { ConfirmDeleteDialogService } from '../../confirm-delete/confirm-delete-dialog.service';
@@ -38,7 +37,6 @@ import { NodeFocusService } from '../focus/node-focus.service';
 @Injectable()
 export class DiagramKeyboardService {
   private readonly selectionService = inject(NgDiagramSelectionService);
-  private readonly layoutService = inject(LayoutService);
   private readonly navigationService = inject(NavigationOrderService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeFocusService = inject(NodeFocusService);
@@ -120,11 +118,7 @@ export class DiagramKeyboardService {
   }
 
   private moveFocus(event: KeyboardEvent, nodeId: string): void {
-    const targetId = this.navigationService.getAdjacentNodeId(
-      nodeId,
-      event.shiftKey ? -1 : 1,
-      this.layoutService.isHorizontal(),
-    );
+    const targetId = this.navigationService.getAdjacentNodeId(nodeId, event.shiftKey ? -1 : 1);
     if (!targetId) return;
     event.preventDefault();
     this.diagramFocusService.focusNode(targetId);
@@ -132,11 +126,7 @@ export class DiagramKeyboardService {
 
   private moveFocusInDirection(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallowFromLibrary(event);
-    const targetId = this.navigationService.getNextNodeId(
-      focus.nodeId,
-      event.key as ArrowKey,
-      this.layoutService.isHorizontal(),
-    );
+    const targetId = this.navigationService.getNextNodeId(focus.nodeId, event.key as ArrowKey);
     if (!targetId) return;
     this.diagramFocusService.focusNode(targetId);
   }

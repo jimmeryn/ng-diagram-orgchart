@@ -15,7 +15,6 @@ import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagra
 import { NavigationOrderService } from '../diagram/keyboard-navigation/order/navigation-order.service';
 import type { ArrowKey } from '../diagram/keyboard-navigation/order/arrow-keys';
 import { LayoutGate } from '../diagram/layout/layout-gate';
-import { LayoutService } from '../diagram/layout/layout.service';
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { MoveCandidatesService } from './candidates/move-candidates.service';
 import { MoveMessageFactory } from './messages/move-message.factory';
@@ -70,7 +69,6 @@ export class MoveModeService implements OnDestroy {
   private readonly diagramFocusService = inject(DiagramFocusService);
   private readonly navigationService = inject(NavigationOrderService);
   private readonly layoutGate = inject(LayoutGate);
-  private readonly layoutService = inject(LayoutService);
   private readonly hierarchyService = inject(HierarchyService);
   private readonly modelService = inject(NgDiagramModelService);
   private readonly resultVisibleMs = inject(MOVE_RESULT_VISIBLE_MS);
@@ -134,7 +132,7 @@ export class MoveModeService implements OnDestroy {
       return;
     }
 
-    const candidates = this.candidatesService.build(nodeId, this.layoutService.isHorizontal());
+    const candidates = this.candidatesService.build(nodeId);
     if (candidates.all.length === 0) {
       this.setResult(moveNowhereMessage(this.messages.nodeName(nodeId)));
       return;
@@ -177,8 +175,7 @@ export class MoveModeService implements OnDestroy {
     }
 
     const from = state.candidates.nodeIds[state.nodeIndex];
-    const isHorizontal = this.layoutService.isHorizontal();
-    const targetId = this.navigationService.getNextNodeId(from, key, isHorizontal);
+    const targetId = this.navigationService.getNextNodeId(from, key);
     if (!targetId) return;
 
     const nodeIndex = state.candidates.nodeIds.indexOf(targetId);
@@ -212,7 +209,7 @@ export class MoveModeService implements OnDestroy {
     }
 
     const picked = this.candidatesFor(state)[state.sideIndex];
-    const fresh = this.candidatesService.build(movingId, this.layoutService.isHorizontal());
+    const fresh = this.candidatesService.build(movingId);
     const match = fresh.all.find((c) => c.nodeId === picked.nodeId && c.side === picked.side);
     if (!match) {
       this.exit(moveStaleMessage(moving));
