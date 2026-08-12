@@ -10,6 +10,7 @@ import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { ModelApplyService } from '../diagram/model/model-apply.service';
 import { RemoveNodeService } from '../diagram/model/remove-node.service';
 import { SortOrderService } from '../diagram/model/sort-order.service';
+import { provideDiagramFocusRegions } from '../diagram/keyboard-navigation/focus/diagram-focus-regions';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagram-focus.service';
 import { provideDiagramModalFocusRestore } from '../diagram/keyboard-navigation/focus/diagram-modal-focus-restore';
 import { trackFocusInputModality } from '../diagram/keyboard-navigation/focus/focus-input-modality';
@@ -76,6 +77,10 @@ import { TopNavbarComponent } from '../top-navbar/top-navbar.component';
     NavigationOrderService,
     NodeFocusService,
     DiagramFocusService,
+    provideDiagramFocusRegions({
+      diagram: 'app-diagram',
+      retaining: ['app-diagram', 'app-properties-sidebar'],
+    }),
     ...provideKeyboardShortcuts(),
     ...provideConfirmDelete(),
     provideDiagramModalFocusRestore(),

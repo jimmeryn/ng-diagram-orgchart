@@ -39,22 +39,7 @@ export function findNodeHost(nodeId: string): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[data-org-node-id="${nodeId}"]`);
 }
 
-const DIAGRAM_SELECTOR = 'main.diagram';
-
-const MEMORY_RETAINING_REGIONS = `${DIAGRAM_SELECTOR}, app-properties-sidebar`;
-
-/**
- * Whether focus landing on this target should preserve the diagram's remembered
- * node. Focus moving into the properties panel keeps it, so tabbing back out of
- * the panel returns to the node the panel was opened from.
- */
-export function retainsRememberedNode(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest(MEMORY_RETAINING_REGIONS) !== null;
-}
-
-/**
- * Whether the given event target lies inside the diagram's main region.
- */
-export function isInsideDiagram(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest(DIAGRAM_SELECTOR) !== null;
+/** Whether the target lies inside the region the selector names. */
+export function isInsideRegion(target: EventTarget | null, selector: string): boolean {
+  return target instanceof Element && target.closest(selector) !== null;
 }

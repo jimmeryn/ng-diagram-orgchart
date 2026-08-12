@@ -3,12 +3,12 @@ import { NgDiagramModelService } from 'ng-diagram';
 import { LayoutService } from '../../layout/layout.service';
 import { NodeVisibilityService } from '../../node-visibility/node-visibility.service';
 import {
-  isInsideDiagram,
+  isInsideRegion,
   NODE_HOST_SELECTOR,
   resolveDiagramFocus,
-  retainsRememberedNode,
   type DiagramFocus,
 } from './diagram-focus-level';
+import { DIAGRAM_FOCUS_REGIONS } from './diagram-focus-regions';
 import { NavigationOrderService } from '../order/navigation-order.service';
 import { NodeFocusService } from './node-focus.service';
 
@@ -25,6 +25,9 @@ export class DiagramFocusService {
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeFocusService = inject(NodeFocusService);
   private readonly modelService = inject(NgDiagramModelService);
+  private readonly regions = inject(DIAGRAM_FOCUS_REGIONS);
+
+  private readonly retainingSelector = this.regions.retaining.join(', ');
 
   private readonly lastFocusedNodeId = signal<string | null>(null);
   private readonly nodeWithFocus = signal<string | null>(null);
@@ -46,7 +49,7 @@ export class DiagramFocusService {
 
   handleNodeFocus(nodeId: string, from: EventTarget | null): void {
     this.lastFocusedNodeId.set(nodeId);
-    if (isInsideDiagram(from)) return;
+    if (isInsideRegion(from, this.regions.diagram)) return;
     this.nodeVisibilityService.ensureVisible(nodeId);
   }
 
@@ -57,7 +60,7 @@ export class DiagramFocusService {
   handlePageFocusIn(target: EventTarget | null): void {
     const focus = resolveDiagramFocus(target);
     this.nodeWithFocus.set(this.resolveContainment(focus));
-    if (retainsRememberedNode(target)) return;
+    if (isInsideRegion(target, this.retainingSelector)) return;
     this.lastFocusedNodeId.set(null);
   }
 
