@@ -1,9 +1,10 @@
 <button
   class="add-btn"
   type="button"
+  tabindex="-1"
   animate.leave="add-btn--leaving"
   [appAddButtonPosition]="position()"
-  [disabled]="isDisabled()"
+  [attr.data-node-action]="action()"
   [attr.aria-label]="ariaLabel()"
   (pointerdown)="$event.stopPropagation()"
   (click)="onAdd($event)"

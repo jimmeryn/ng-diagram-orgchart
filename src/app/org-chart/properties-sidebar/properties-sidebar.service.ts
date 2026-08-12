@@ -23,6 +23,9 @@ export class PropertiesSidebarService {
   private openerEl: HTMLElement | null = null;
   private fallbackFocusTarget: HTMLElement | null = null;
 
+  private readonly focusFirstFieldRequest = signal(0);
+  readonly firstFieldFocusRequest = this.focusFirstFieldRequest.asReadonly();
+
   readonly selectedOrgChartNodes = computed<Node<OrgChartNodeData>[]>(() =>
     this.selectionService.selection().nodes.filter(isOrgChartNode),
   );
@@ -61,6 +64,7 @@ export class PropertiesSidebarService {
   expandSidebar(opener?: HTMLElement | null): void {
     this.openerEl = opener ?? this.openerEl;
     this.isExpanded.set(true);
+    this.focusFirstFieldRequest.update((request) => request + 1);
   }
 
   toggleSidebarVisibility(opener?: HTMLElement | null): void {
@@ -80,6 +84,11 @@ export class PropertiesSidebarService {
     const target = this.openerEl ?? this.fallbackFocusTarget;
     this.openerEl = null;
     this.isExpanded.set(false);
-    queueMicrotask(() => target?.focus());
+    queueMicrotask(() => {
+      target?.focus({ preventScroll: true });
+      if (document.activeElement === document.body) {
+        this.fallbackFocusTarget?.focus({ preventScroll: true });
+      }
+    });
   }
 }

@@ -7,6 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import {
+  configureShortcuts,
   DiagramInitEvent,
   initializeModel,
   NgDiagramBackgroundComponent,
@@ -22,11 +23,13 @@ import {
 import { DragReorderService } from '../drag-reorder/drag-reorder.service';
 import { DragService } from '../drag-reorder/drag.service';
 import { DropService } from '../drag-reorder/drop.service';
+import { MoveModeStatusComponent, provideKeyboardMove } from '../keyboard-move';
 import { ORG_CHART_CONFIG } from '../org-chart.config';
 import { PropertiesSidebarService } from '../properties-sidebar/properties-sidebar.service';
 import { diagramModel } from './data';
 import { EdgeComponent } from './edge.component';
-import { DiagramKeyboardController } from './keyboard-navigation/diagram-keyboard.controller';
+import { DiagramFocusService } from './keyboard-navigation/focus/diagram-focus.service';
+import { DiagramKeyboardService } from './keyboard-navigation/routing/diagram-keyboard.service';
 import { LayoutGate } from './layout/layout-gate';
 import { LayoutService, type LayoutDirection } from './layout/layout.service';
 import { isOrgChartNode } from './model/guards';
@@ -50,11 +53,22 @@ import { SuppressLibraryTabStopsDirective } from './suppress-library-tab-stops.d
  */
 @Component({
   selector: 'app-diagram',
-  imports: [NgDiagramComponent, NgDiagramBackgroundComponent, SuppressLibraryTabStopsDirective],
+  imports: [
+    NgDiagramComponent,
+    NgDiagramBackgroundComponent,
+    SuppressLibraryTabStopsDirective,
+    MoveModeStatusComponent,
+  ],
   templateUrl: './diagram.component.html',
   styleUrl: './diagram.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [DragService, DropService, DragReorderService],
+  providers: [
+    DragService,
+    DropService,
+    DragReorderService,
+    DiagramKeyboardService,
+    ...provideKeyboardMove(),
+  ],
 })
 export class DiagramComponent {
   private readonly orgChartConfig = inject(ORG_CHART_CONFIG);
@@ -68,13 +82,16 @@ export class DiagramComponent {
   private readonly sidebarService = inject(PropertiesSidebarService);
   private readonly nodeVisibilityService = inject(NodeVisibilityService);
   private readonly nodeVisibilityConfigService = inject(NodeVisibilityConfigService);
-  private readonly keyboardController = inject(DiagramKeyboardController);
+  private readonly keyboardService = inject(DiagramKeyboardService);
+  private readonly diagramFocusService = inject(DiagramFocusService);
 
-  private readonly diagramElement = viewChild('diagramElement', { read: ElementRef<HTMLElement> });
+  private readonly diagramMain = viewChild('diagramMain', { read: ElementRef<HTMLElement> });
 
   constructor() {
     effect(() => {
-      this.sidebarService.setFallbackFocusTarget(this.diagramElement()?.nativeElement ?? null);
+      const element = this.diagramMain()?.nativeElement ?? null;
+      this.sidebarService.setFallbackFocusTarget(element);
+      this.diagramFocusService.setFallbackTarget(element);
     });
   }
 
@@ -94,6 +111,15 @@ export class DiagramComponent {
     zIndex: {
       elevateOnSelection: false,
     },
+    shortcuts: configureShortcuts([
+      // The app owns Delete, because it confirms first.
+      { actionName: 'deleteSelection', bindings: [] },
+      // ELK owns the positions, so the next layout run puts a nudged node back.
+      { actionName: 'keyboardMoveSelectionUp', bindings: [] },
+      { actionName: 'keyboardMoveSelectionDown', bindings: [] },
+      { actionName: 'keyboardMoveSelectionLeft', bindings: [] },
+      { actionName: 'keyboardMoveSelectionRight', bindings: [] },
+    ]),
   } satisfies NgDiagramConfig;
 
   nodeTemplateMap = new NgDiagramNodeTemplateMap([[NodeTemplateType.OrgChartNode, NodeComponent]]);
@@ -127,17 +153,19 @@ export class DiagramComponent {
    * button is removed. Always re-layout to reposition remaining nodes.
    */
   async onSelectionRemoved(event: SelectionRemovedEvent): Promise<void> {
-    if (event.deletedEdges.length === 0) return;
+    if (event.deletedEdges.length > 0) {
+      const parentIds = [...new Set(event.deletedEdges.map((e) => e.source))];
+      const changes = new ModelChanges();
+      this.hierarchyService.clearHasChildrenFlags(parentIds, changes);
 
-    const parentIds = [...new Set(event.deletedEdges.map((e) => e.source))];
-    const changes = new ModelChanges();
-    this.hierarchyService.clearHasChildrenFlags(parentIds, changes);
+      await this.modelApplyService.applyWithLayout(changes);
 
-    await this.modelApplyService.applyWithLayout(changes);
-
-    if (parentIds.length > 0) {
-      this.nodeVisibilityService.ensureVisible(parentIds[0]);
+      if (parentIds.length > 0) {
+        this.nodeVisibilityService.ensureVisible(parentIds[0]);
+      }
     }
+
+    this.diagramFocusService.recoverFocusIfLost();
   }
 
   /** Opens the properties sidebar when org-chart nodes are selected. */
@@ -149,7 +177,7 @@ export class DiagramComponent {
   }
 
   onDiagramKeydown(event: KeyboardEvent): void {
-    this.keyboardController.handle(event);
+    this.keyboardService.handle(event);
   }
 
   /** Fits all nodes in view, accounting for overlay insets plus extra padding. */

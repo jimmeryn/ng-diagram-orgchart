@@ -12,7 +12,12 @@
           [roleOptions]="roleOptions"
         />
         <div class="sidebar-actions">
-          <button class="remove-button p10" type="button" (click)="onRemoveNode()">
+          <button
+            #removeButton
+            class="remove-button p10"
+            type="button"
+            (click)="onDeleteNode(removeButton)"
+          >
             Remove node
           </button>
         </div>

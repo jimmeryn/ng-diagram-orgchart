@@ -8,18 +8,12 @@
         type="text"
         class="form-input p10"
         [formField]="fieldTree.fullName"
-        [appAutofocus]="nodeId()"
-        placeholder="Enter full name"
+        [appAutofocus]="firstFieldFocusRequest()"
       />
     </app-form-field>
 
     <app-form-field label="Role" fieldId="role">
-      <app-combobox
-        triggerId="role"
-        [formField]="fieldTree.role"
-        [options]="roleOptions()"
-        placeholder="Select a role"
-      />
+      <app-combobox triggerId="role" [formField]="fieldTree.role" [options]="roleOptions()" />
     </app-form-field>
 
     <app-form-field label="Description" fieldId="description">
@@ -27,7 +21,6 @@
         id="description"
         class="form-input form-textarea p10"
         [formField]="fieldTree.description"
-        placeholder="Enter description"
         rows="3"
       ></textarea>
     </app-form-field>

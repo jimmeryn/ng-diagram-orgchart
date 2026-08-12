@@ -38,7 +38,12 @@ export class HierarchyService {
       .map((n) => n.id);
   }
 
-  /** Collects all descendant IDs below the given node (excluding the node itself). */
+  /**
+   * Collects all descendant IDs below the given node (excluding the node itself).
+   *
+   * The result set also stops the traversal from repeating a node. A user can draw an edge
+   * back to an ancestor, and without this the stack never empties.
+   */
   getDescendantIds(nodeId: string): Set<string> {
     const childrenMap = this.buildChildrenMap();
     const descendantIds = new Set<string>();
@@ -50,6 +55,7 @@ export class HierarchyService {
       const children = childrenMap.get(parentId);
       if (children) {
         for (const childId of children) {
+          if (descendantIds.has(childId)) continue;
           descendantIds.add(childId);
           stack.push(childId);
         }

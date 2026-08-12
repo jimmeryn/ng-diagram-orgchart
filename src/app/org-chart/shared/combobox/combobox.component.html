@@ -20,7 +20,6 @@
       [attr.aria-controls]="isOpen() ? panelId() : null"
       aria-autocomplete="list"
       aria-haspopup="listbox"
-      [value]="inputText()"
       (click)="onTriggerClick()"
       (input)="onInput($event)"
       (keydown)="onKeydown($event)"
