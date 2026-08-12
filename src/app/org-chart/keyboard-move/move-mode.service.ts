@@ -134,13 +134,13 @@ export class MoveModeService implements OnDestroy {
     if (this.hierarchyService.getParentId(nodeId) === null) return;
 
     if (!this.layoutGate.isIdle()) {
-      this.status.set(moveBusyAtStartMessage());
+      this.setResult(moveBusyAtStartMessage());
       return;
     }
 
     const candidates = this.candidatesService.build(nodeId, this.layoutService.isHorizontal());
     if (candidates.all.length === 0) {
-      this.status.set(moveNowhereMessage(this.messages.nodeName(nodeId)));
+      this.setResult(moveNowhereMessage(this.messages.nodeName(nodeId)));
       return;
     }
 
