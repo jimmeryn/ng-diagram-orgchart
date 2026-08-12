@@ -1,5 +1,5 @@
-/** Keys the library binds to actions that change the model. */
-const MUTATING_KEYS = new Set(['x', 'v', 'a', 'z', 'y']);
+/** Library shortcuts a move in progress must not let through: cut, paste, select all, undo, redo. */
+const DISRUPTIVE_LIBRARY_KEYS = new Set(['x', 'v', 'a', 'z', 'y']);
 
 /** `Ctrl` on Windows and Linux, `Cmd` on macOS. */
 function hasPrimaryModifier(event: KeyboardEvent): boolean {
@@ -14,8 +14,8 @@ export function isModifierEnter(event: KeyboardEvent): boolean {
   return event.key === 'Enter' && hasPrimaryModifier(event);
 }
 
-export function isModelMutatingShortcut(event: KeyboardEvent): boolean {
-  return hasPrimaryModifier(event) && MUTATING_KEYS.has(event.key.toLowerCase());
+export function isDisruptiveLibraryShortcut(event: KeyboardEvent): boolean {
+  return hasPrimaryModifier(event) && DISRUPTIVE_LIBRARY_KEYS.has(event.key.toLowerCase());
 }
 
 export function swallow(event: KeyboardEvent): void {

@@ -13,7 +13,7 @@ import { DragReorderService } from '../drag-reorder/drag-reorder.service';
 import { DropService } from '../drag-reorder/drop.service';
 import { DiagramFocusService } from '../diagram/keyboard-navigation/focus/diagram-focus.service';
 import { NavigationOrderService } from '../diagram/keyboard-navigation/order/navigation-order.service';
-import type { ArrowKey } from '../diagram/keyboard-navigation/order/arrow-keys';
+import { arrowStep, type ArrowKey } from '../diagram/keyboard-navigation/order/arrow-keys';
 import { LayoutGate } from '../diagram/layout/layout-gate';
 import { HierarchyService } from '../diagram/model/hierarchy.service';
 import { MoveCandidatesService } from './candidates/move-candidates.service';
@@ -170,7 +170,7 @@ export class MoveModeService implements OnDestroy {
     if (!state) return;
 
     if (state.sideIndex !== null) {
-      this.step(key === 'ArrowUp' || key === 'ArrowLeft' ? -1 : 1);
+      this.step(arrowStep(key));
       return;
     }
 

@@ -6,7 +6,7 @@ import { ExpandCollapseService } from '../../model/expand-collapse.service';
 import { ModelApplyService } from '../../model/model-apply.service';
 import { ConfirmDeleteDialogService } from '../../confirm-delete/confirm-delete-dialog.service';
 import { NodeVisibilityService } from '../../node-visibility/node-visibility.service';
-import { isArrowKey, type ArrowKey } from '../order/arrow-keys';
+import { arrowStep, isArrowKey, type ArrowKey } from '../order/arrow-keys';
 import {
   resolveDiagramFocus,
   type FocusedNode,
@@ -16,7 +16,7 @@ import {
 import { type KeyBinding } from './key-bindings.interface';
 import {
   isDeleteKey,
-  isModelMutatingShortcut,
+  isDisruptiveLibraryShortcut,
   isModifierEnter,
   swallow,
   swallowFromLibrary,
@@ -48,9 +48,8 @@ export class DiagramKeyboardService {
   private readonly moveModeService = inject(MoveModeService);
 
   /**
-   * While a node is being moved, every key that would change the model has to be stopped before
-   * the library sees it. `Ctrl`/`Cmd`+`X` is the worst of them: it copies and then deletes the
-   * selection with its children, and the selection is the node being moved.
+   * While a node is being moved, every key that would disturb the move has to be stopped before
+   * the library sees it.
    */
   private readonly moveModeBindings: readonly KeyBinding<void>[] = [
     { match: (e) => e.key === 'Escape', run: (e) => this.cancelMove(e) },
@@ -59,18 +58,15 @@ export class DiagramKeyboardService {
     { match: (e) => e.key === 'Tab', run: (e) => this.stepMove(e) },
     { match: (e) => isArrowKey(e.key) && !e.shiftKey, run: (e) => this.stepMoveByArrow(e) },
     { match: (e) => isArrowKey(e.key) && e.shiftKey, run: swallow },
-    { match: isDeleteKey, run: swallowFromLibrary },
-    { match: isModelMutatingShortcut, run: swallowFromLibrary },
+    { match: isDeleteKey, run: swallow },
+    { match: isDisruptiveLibraryShortcut, run: swallowFromLibrary },
     { match: (e) => e.key === ' ', run: swallow },
     { match: (e) => e.key === '?', run: swallowFromLibrary },
   ];
 
   private readonly nodeBindings: readonly KeyBinding<FocusedNode>[] = [
     { match: (e) => e.key === 'Tab', run: (e, f) => this.moveFocus(e, f.nodeId) },
-    {
-      match: (e) => e.shiftKey && isArrowKey(e.key),
-      run: (e, f) => this.moveFocusInDirection(e, f),
-    },
+    { match: (e) => isArrowKey(e.key), run: (e, f) => this.moveFocusInDirection(e, f) },
     { match: isModifierEnter, run: (e, f) => this.selectAndOpenSidebar(e, f) },
     { match: (e) => e.key === 'Enter', run: (e, f) => this.selectAndDescend(e, f) },
     { match: (e) => e.key === 'Escape', run: (e) => this.clearSelection(e) },
@@ -84,8 +80,7 @@ export class DiagramKeyboardService {
       match: (e) => e.shiftKey && isArrowKey(e.key),
       run: (e, f) => this.moveFocusInDirection(e, f),
     },
-    // A bare arrow would nudge the selected node across the canvas.
-    { match: (e) => isArrowKey(e.key), run: swallowFromLibrary },
+    { match: (e) => isArrowKey(e.key), run: (e, f) => this.stepActionByArrow(e, f) },
     { match: isModifierEnter, run: (e, f) => this.selectAndOpenSidebar(e, f) },
     { match: (e) => e.key === 'Escape', run: (e, f) => this.ascendToNode(e, f) },
     { match: isDeleteKey, run: (e, f) => this.requestDelete(e, f) },
@@ -124,6 +119,7 @@ export class DiagramKeyboardService {
     this.diagramFocusService.focusNode(targetId);
   }
 
+  /** The arrow has to be stopped as well, or the library pans the chart under the new focus. */
   private moveFocusInDirection(event: KeyboardEvent, focus: NodeFocusContext): void {
     swallowFromLibrary(event);
     const targetId = this.navigationService.getNextNodeId(focus.nodeId, event.key as ArrowKey);
@@ -161,13 +157,23 @@ export class DiagramKeyboardService {
   }
 
   private moveFocusWithinActions(event: KeyboardEvent, focus: FocusedNodeAction): void {
-    const actions = getNodeActions(focus.host);
-    if (actions.length === 0) return;
+    const next = this.nextAction(focus, event.shiftKey ? -1 : 1);
+    if (!next) return;
     swallow(event);
-    const step = event.shiftKey ? -1 : 1;
+    next.focus({ preventScroll: true });
+  }
+
+  /** An arrow stays inside the node's own buttons. `Escape` is the way back out. */
+  private stepActionByArrow(event: KeyboardEvent, focus: FocusedNodeAction): void {
+    swallowFromLibrary(event);
+    this.nextAction(focus, arrowStep(event.key as ArrowKey))?.focus({ preventScroll: true });
+  }
+
+  private nextAction(focus: FocusedNodeAction, step: 1 | -1): HTMLElement | null {
+    const actions = getNodeActions(focus.host);
+    if (actions.length === 0) return null;
     const index = actions.indexOf(focus.action);
-    const nextIndex = (index + step + actions.length) % actions.length;
-    actions[nextIndex].focus({ preventScroll: true });
+    return actions[(index + step + actions.length) % actions.length];
   }
 
   private ascendToNode(event: KeyboardEvent, focus: FocusedNodeAction): void {
@@ -175,9 +181,9 @@ export class DiagramKeyboardService {
     focus.host.focus({ preventScroll: true });
   }
 
-  /** Always stop the key. If it gets through, the library deletes the selection unconfirmed. */
+  /** Stop the key, so Backspace cannot reach a browser default. */
   private requestDelete(event: KeyboardEvent, focus: NodeFocusContext): void {
-    swallowFromLibrary(event);
+    swallow(event);
     this.confirmDeleteService.requestDelete(focus.nodeId, focus.host);
   }
 
@@ -196,7 +202,7 @@ export class DiagramKeyboardService {
     this.moveModeService.step(event.shiftKey ? -1 : 1);
   }
 
-  /** The arrow has to be stopped as well, or the library nudges the moved node by a pixel. */
+  /** The arrow has to be stopped as well, or the library pans the chart under the move. */
   private stepMoveByArrow(event: KeyboardEvent): void {
     swallowFromLibrary(event);
     this.moveModeService.stepByArrow(event.key as ArrowKey);

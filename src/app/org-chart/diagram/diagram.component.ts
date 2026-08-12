@@ -7,6 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import {
+  configureShortcuts,
   DiagramInitEvent,
   initializeModel,
   NgDiagramBackgroundComponent,
@@ -110,6 +111,15 @@ export class DiagramComponent {
     zIndex: {
       elevateOnSelection: false,
     },
+    shortcuts: configureShortcuts([
+      // The app owns Delete, because it confirms first.
+      { actionName: 'deleteSelection', bindings: [] },
+      // ELK owns the positions, so the next layout run puts a nudged node back.
+      { actionName: 'keyboardMoveSelectionUp', bindings: [] },
+      { actionName: 'keyboardMoveSelectionDown', bindings: [] },
+      { actionName: 'keyboardMoveSelectionLeft', bindings: [] },
+      { actionName: 'keyboardMoveSelectionRight', bindings: [] },
+    ]),
   } satisfies NgDiagramConfig;
 
   nodeTemplateMap = new NgDiagramNodeTemplateMap([[NodeTemplateType.OrgChartNode, NodeComponent]]);

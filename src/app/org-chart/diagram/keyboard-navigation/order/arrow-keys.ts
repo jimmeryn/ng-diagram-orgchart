@@ -5,6 +5,11 @@ export function isArrowKey(key: string): key is ArrowKey {
   return (ARROW_KEYS as readonly string[]).includes(key);
 }
 
+/** Which way an arrow steps through a list: back for up and left, forward for down and right. */
+export function arrowStep(key: ArrowKey): 1 | -1 {
+  return key === 'ArrowUp' || key === 'ArrowLeft' ? -1 : 1;
+}
+
 export type NavDirection = 'parent' | 'firstChild' | 'prevSibling' | 'nextSibling';
 
 export interface ArrowDirectionStrategy {

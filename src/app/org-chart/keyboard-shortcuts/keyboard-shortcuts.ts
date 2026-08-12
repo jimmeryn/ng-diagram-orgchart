@@ -29,15 +29,15 @@ export function spokenKey(glyph: string): string {
 export const SHORTCUTS: readonly ShortcutRow[] = [
   { combos: [['Tab']], action: 'Go to next node' },
   { combos: [['Shift', 'Tab']], action: 'Go to previous node' },
-  { combos: [['Shift', 'arrow keys']], action: 'Go to nearby node' },
+  { combos: [['arrow keys'], ['Shift', 'arrow keys']], action: 'Go to nearby node' },
   { combos: [['Enter']], action: 'Select node and go to its buttons' },
+  { combos: [['arrow keys']], action: 'Go to next node button, while a button has focus' },
   { combos: [['Escape']], action: 'Leave node buttons, or clear the selection' },
   { combos: [['Space']], action: 'Expand or collapse node' },
   { combos: [[MOD, 'Enter']], action: 'Open properties panel' },
   {
     combos: [['arrow keys']],
-    action:
-      'Move selected node, or pan the chart. While moving a colleague, go to a nearby colleague or position',
+    action: 'Pan the chart, while no node has focus and nothing is selected',
   },
   {
     combos: [['Delete'], ['Backspace']],
@@ -56,6 +56,10 @@ export const SHORTCUTS: readonly ShortcutRow[] = [
   {
     combos: [['Tab'], ['Shift', 'Tab']],
     action: 'While moving a colleague: step through the colleagues, then through their positions',
+  },
+  {
+    combos: [['arrow keys']],
+    action: 'While moving a colleague: go to a nearby colleague or position',
   },
   {
     combos: [['Enter']],
